@@ -186,9 +186,9 @@ void Game::CreateGeometry()
 	//    since we're describing the triangle in terms of the window itself
 	Vertex vertices[] =
 	{
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
-		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), green },
+		{ XMFLOAT3(+0.0f, +0.3f, +0.0f), red },
+		{ XMFLOAT3(+0.3f, -0.3f, +0.0f), blue },
+		{ XMFLOAT3(-0.3f, -0.3f, +0.0f), green },
 	};
 
 	// Set up indices, which tell us which vertices to use and in which order
@@ -200,6 +200,33 @@ void Game::CreateGeometry()
 
 	std::shared_ptr<Mesh> triangle = std::make_shared<Mesh>(device, context, vertices, indices);
 	meshes.push_back(triangle);
+
+
+	// Square 
+	Vertex verticesB[] =
+	{
+		{ XMFLOAT3(-0.7f, +0.5f, +0.0f), red },
+		{ XMFLOAT3(-0.4f, +0.5f, +0.0f), green },
+		{ XMFLOAT3(-0.4f, -0.5f, +0.0f), blue },
+		{ XMFLOAT3(-0.7f, -0.5f, +0.0f), green },
+	};
+	unsigned int indicesB[] = { 0, 1, 2, 0, 2, 3 };
+
+	std::shared_ptr<Mesh> square = std::make_shared<Mesh>(device, context, verticesB, indicesB);
+	meshes.push_back(square);
+
+
+	Vertex verticesC[] =
+	{
+		{ XMFLOAT3(+0.8f, +0.8f, +0.0f), red }, // Center 
+		{ XMFLOAT3(+0.7f, +0.9f, +0.0f), green },
+		{ XMFLOAT3(+0.7f, +0.7f, +0.0f), blue },
+		{ XMFLOAT3(+0.9f, -0.5f, +0.0f), green },
+	};
+	unsigned int indicesC[] = {0, 1, 2 };
+
+	std::shared_ptr<Mesh> bow = std::make_shared<Mesh>(device, context, verticesC, indicesC);
+	meshes.push_back(bow);
 }
 
 
@@ -241,7 +268,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	meshes[0]->Draw();
+	for (unsigned int i = 0; i < meshes.size(); i++)
+	{
+		meshes[i]->Draw();
+	}
 
 	// Frame END
 	// - These should happen exactly ONCE PER FRAME
