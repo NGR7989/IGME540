@@ -12,14 +12,20 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 
+	Microsoft::WRL::ComPtr<ID3D11Device> device; 
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext;
+
+	int indicesCount;
+	int vertexCount;
+
 public:
-	Mesh(Microsoft::WRL::ComPtr<ID3D11Device> device, Vertex vertices[], unsigned int indices[]);
+	Mesh(Microsoft::WRL::ComPtr<ID3D11Device> device, Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, Vertex vertices[], unsigned int indices[]);
 	~Mesh();
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetIndexBuffer();
 	int GetIndexCount();
 
-	void Draw(float deltaTime, float totalTime);
+	void Draw();
 };
 
