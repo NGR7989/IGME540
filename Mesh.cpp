@@ -1,8 +1,8 @@
 #include "Mesh.h"
 
 
-Mesh::Mesh(Microsoft::WRL::ComPtr<ID3D11Device> device, Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, Vertex vertices[], unsigned int indices[])
-	:device(device), deviceContext(deviceContext), indicesCount(sizeof(indices)), vertexCount(sizeof(vertices))
+Mesh::Mesh(Microsoft::WRL::ComPtr<ID3D11Device> device, Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, Vertex vertices[], unsigned int indices[], int vertexCount, int indexCount)
+	:device(device), deviceContext(deviceContext), indicesCount(indexCount), vertexCount(vertexCount)
 {
 	// Create a VERTEX BUFFER
 		// - This holds the vertex data of triangles for a single object
@@ -42,7 +42,7 @@ Mesh::Mesh(Microsoft::WRL::ComPtr<ID3D11Device> device, Microsoft::WRL::ComPtr<I
 		//  - Bind Flag (used as an index buffer instead of a vertex buffer) 
 		D3D11_BUFFER_DESC ibd = {};
 		ibd.Usage = D3D11_USAGE_IMMUTABLE;	// Will NEVER change
-		ibd.ByteWidth = sizeof(unsigned int) * indicesCount;	// 3 = number of indices in the buffer
+		ibd.ByteWidth = sizeof(unsigned int) * indicesCount;	
 		ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;	// Tells Direct3D this is an index buffer
 		ibd.CPUAccessFlags = 0;	// Note: We cannot access the data from C++ (this is good)
 		ibd.MiscFlags = 0;

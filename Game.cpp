@@ -198,34 +198,43 @@ void Game::CreateGeometry()
 	// - But just to see how it's done...
 	unsigned int indices[] = { 0, 1, 2 };
 
-	std::shared_ptr<Mesh> triangle = std::make_shared<Mesh>(device, context, vertices, indices);
+	std::shared_ptr<Mesh> triangle = std::make_shared<Mesh>(device, context, vertices, indices, sizeof(vertices) / sizeof(Vertex), sizeof(indices) / sizeof(unsigned int));
 	meshes.push_back(triangle);
 
 
 	// Square 
 	Vertex verticesB[] =
 	{
-		{ XMFLOAT3(-0.7f, +0.5f, +0.0f), red },
-		{ XMFLOAT3(-0.4f, +0.5f, +0.0f), green },
-		{ XMFLOAT3(-0.4f, -0.5f, +0.0f), blue },
+		{ XMFLOAT3(-0.7f, +0.5f, +0.0f), blue },
+		{ XMFLOAT3(-0.4f, +0.5f, +0.0f), blue },
+		{ XMFLOAT3(-0.4f, -0.5f, +0.0f), green },
 		{ XMFLOAT3(-0.7f, -0.5f, +0.0f), green },
 	};
 	unsigned int indicesB[] = { 0, 1, 2, 0, 2, 3 };
 
-	std::shared_ptr<Mesh> square = std::make_shared<Mesh>(device, context, verticesB, indicesB);
+	std::shared_ptr<Mesh> square = std::make_shared<Mesh>(device, context, verticesB, indicesB, sizeof(verticesB) / sizeof(Vertex), sizeof(indicesB) / sizeof(unsigned int));
 	meshes.push_back(square);
 
 
 	Vertex verticesC[] =
 	{
-		{ XMFLOAT3(+0.8f, +0.8f, +0.0f), red }, // Center 
-		{ XMFLOAT3(+0.7f, +0.9f, +0.0f), green },
-		{ XMFLOAT3(+0.7f, +0.7f, +0.0f), blue },
-		{ XMFLOAT3(+0.9f, -0.5f, +0.0f), green },
-	};
-	unsigned int indicesC[] = {0, 1, 2 };
+		{ XMFLOAT3(+0.8f, +0.8f, +0.0f), red }, // Center Top
 
-	std::shared_ptr<Mesh> bow = std::make_shared<Mesh>(device, context, verticesC, indicesC);
+		{ XMFLOAT3(+0.7f, +0.8f, +0.0f), red },
+		{ XMFLOAT3(+0.65f, +0.9f, +0.0f), blue },
+		{ XMFLOAT3(+0.8f, +1.0f, +0.0f), blue },
+		{ XMFLOAT3(+0.95f, +0.9f, +0.0f), blue },
+		{ XMFLOAT3(+0.9f, +0.8f, +0.0f), red },
+		
+		{ XMFLOAT3(+0.6f, +0.1f, +0.0f), blue },
+		{ XMFLOAT3(+1.0f, +0.1f, +0.0f), blue },
+	};
+
+	std::vector<unsigned int> hexVector = std::vector<unsigned int>();
+
+	unsigned int indicesC[] = { 2, 0, 1,  2, 4, 0,  4, 5, 0,  1, 5, 6,  5, 7, 6};
+
+	std::shared_ptr<Mesh> bow = std::make_shared<Mesh>(device, context, verticesC, indicesC, sizeof(verticesC) / sizeof(Vertex), sizeof(indicesC) / sizeof(unsigned int));
 	meshes.push_back(bow);
 }
 
