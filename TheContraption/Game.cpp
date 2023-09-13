@@ -12,6 +12,8 @@
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
 
+#include "BufferStructs.h"
+
 // Needed for a helper function to load pre-compiled shader files
 #pragma comment(lib, "d3dcompiler.lib")
 #include <d3dcompiler.h>
@@ -112,6 +114,19 @@ void Game::Init()
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX11_Init(device.Get(), context.Get());
 
+
+	// Get size as the next multiple of 16 (instead of hardcoding a size here!)
+	unsigned int size = sizeof(VertexShaderExternalData);
+	size = (size + 15) / 16 * 16; // This will work even if the struct size changes
+
+	// Describe the constant buffer
+	D3D11_BUFFER_DESC cbDesc = {}; // Sets struct to all zeros
+	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbDesc.ByteWidth = size; // Must be a multiple of 16
+	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+
+	device->CreateBuffer(&cbDesc, 0, vsConstantBuffer.GetAddressOf());
 }
 
 // --------------------------------------------------------
@@ -285,20 +300,28 @@ void Game::Update(float deltaTime, float totalTime)
 	io.DeltaTime = deltaTime;
 	io.DisplaySize.x = (float)this->windowWidth;
 	io.DisplaySize.y = (float)this->windowHeight;
+
+	
+
 	// Reset the frame
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+
 	// Determine new input capture
 	Input& input = Input::GetInstance();
 	input.SetKeyboardCapture(io.WantCaptureKeyboard);
 	input.SetMouseCapture(io.WantCaptureMouse);
 	// Show the demo window
 	//ImGui::ShowDemoWindow();
-	float frameRate = ImGui::GetIO().Framerate;
-	//ImGui::Text(frameRate);
 	
+	float frameRate = ImGui::GetIO().Framerate;
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+		1000.0 / frameRate, frameRate);
+	ImGui::Text("Window Width: %i", windowWidth);
+	ImGui::Text("Window Height: %i", windowHeight);
 
+	ImGui::DragFloat3("drag float3", worldOrigin, 0.02f, 0.0f, 100.0f);
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::GetInstance().KeyDown(VK_ESCAPE))
 		Quit();
@@ -321,8 +344,25 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
+	
+
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
+		VertexShaderExternalData vsData;
+		vsData.colorTint = XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
+		vsData.offset = XMFLOAT3(worldOrigin);
+
+		D3D11_MAPPED_SUBRESOURCE mappedBuffer = {}; // Holds a memory position to the created resource 
+		context->Map(vsConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer); // Lets is safely discard all data currently in buffer
+		memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
+		context->Unmap(vsConstantBuffer.Get(), 0);
+
+		context->VSSetConstantBuffers(
+			0, // Which slot (register) to bind the buffer to?
+			1, // How many are we activating? Can do multiple at once
+			vsConstantBuffer.GetAddressOf()); // Array of buffers (or the address of one)
+		//printf("%f", vsData.offset.x);
+
 		meshes[i]->Draw();
 	}
 
@@ -334,6 +374,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		//  - Puts the results of what we've drawn onto the window
 		//  - Without this, the user never sees anything
 		bool vsyncNecessary = vsync || !deviceSupportsTearing || isFullscreen;
+
 
 		// Draw ImGui
 		ImGui::Render();

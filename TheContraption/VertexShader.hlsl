@@ -1,4 +1,19 @@
 
+// Allows us to send in data through C++ 
+cbuffer ExternalData : register(b0)
+{
+	// We are defining the order that these data structures
+	// are being stored within the shader
+
+	// The data order does matter! Smaller data being placed first will
+	// cause there to be spacing to be added by direct without telling us 
+	// Since we need to know exactly how long items being passed are into
+	// the shader this can cause a large issue for us.
+	float4 colorTint;
+	float3 offset;
+}
+
+
 // Struct representing a single vertex worth of data
 // - This should match the vertex definition in our C++ code
 // - By "match", I mean the size, order and number of members
@@ -51,12 +66,13 @@ VertexToPixel main( VertexShaderInput input )
 	// - Each of these components is then automatically divided by the W component, 
 	//   which we're leaving at 1.0 for now (this is more useful when dealing with 
 	//   a perspective projection matrix, which we'll get to in the future).
-	output.screenPosition = float4(input.localPosition, 1.0f);
-
+	//output.screenPosition = float4(input.localPosition, 1.0f);
+	output.screenPosition = float4(input.localPosition + offset, 1.0f);
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer
 	// - We don't need to alter it here, but we do need to send it to the pixel shader
-	output.color = input.color;
+	//output.color = input.color;
+	output.color = input.color * colorTint;
 
 	// Whatever we return will make its way through the pipeline to the
 	// next programmable stage we're using (the pixel shader for now)

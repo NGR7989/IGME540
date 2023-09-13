@@ -44,7 +44,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 
+	Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstantBuffer;
 
 	std::vector<std::shared_ptr<Mesh>> meshes;
+
+
+	float worldOrigin[3] = { 0.10f, 0.20f, 0.30f };
 };
 
