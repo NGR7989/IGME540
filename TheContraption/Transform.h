@@ -1,0 +1,122 @@
+#pragma once
+#include <DirectXMath.h>
+
+class Transform
+{
+private:
+	/// <summary>
+	/// Represents this objects position in x, y, and z components 
+	/// </summary>
+	DirectX::XMFLOAT3 position;
+	/// <summary>
+	/// Represents this objects scale in x, y, and z components 
+	/// </summary>
+	DirectX::XMFLOAT3 scale;
+	/// <summary>
+	/// Represents this objects rotation as a quaternion 
+	/// </summary>
+	DirectX::XMFLOAT4 rotation;
+
+	DirectX::XMFLOAT4X4 world;
+	DirectX::XMFLOAT4X4 worldTranspose;
+
+public:
+	/// <summary>
+	/// Create a transform that represents a position, scale, and rotation in 3D space 
+	/// </summary>
+	Transform();
+
+	#pragma region SETTERS
+	/// <summary>
+	/// Sets the position of this transform to the given components 
+	/// </summary>
+	void SetPosition(float x, float y, float z);
+	/// <summary>
+	/// Sets the position of this transform to the given vector 
+	/// </summary>
+	/// <param name="position"></param>
+	void SetPosition(DirectX::XMFLOAT3 position);
+	/// <summary>
+	/// Sets the rotation of this transform to the given quaternion components 
+	/// </summary>
+	void SetRotation(float x, float y, float z, float w);
+	/// <summary>
+	/// Sets the rotation of this transform to the given quaternion 
+	/// </summary>
+	/// <param name="rotation"></param>
+	void SetRotation(DirectX::XMFLOAT4 rotation);
+	/// <summary>
+	/// Sets the scale of this transform to the given components
+	/// </summary>
+	void SetScale(float x, float y, float z);
+	/// <summary>
+	/// Sets the scale of this transform to the given vector 
+	/// </summary>
+	void SetScale(DirectX::XMFLOAT3 scale);
+	/// <summary>
+	/// Sets all scale components of this transform to the given value
+	/// </summary>
+	/// <param name="s"></param>
+	void SetScale(float s);
+	#pragma endregion
+
+	#pragma region GETTERS
+	/// <summary>
+	/// Get this transform's current x, y, and z position in 3D space
+	/// </summary>
+	/// <returns></returns>
+	DirectX::XMFLOAT3 GetPosition();
+	/// <summary>
+	/// Get this transform's current quaternion rotation 
+	/// </summary>
+	/// <returns></returns>
+	DirectX::XMFLOAT4 GetRotation();
+	/// <summary>
+	/// Get this transform's current x, y, and z scalar components 
+	/// </summary>
+	/// <returns></returns>
+	DirectX::XMFLOAT3 GetScale();
+	/// <summary>
+	/// Get this transform's world matrix that represents its position, rotation, and scale 
+	/// </summary>
+	/// <returns></returns>
+	DirectX::XMFLOAT4X4 GetWorldMatrix();
+	/// <summary>
+	/// Get this trasnform's world inverse transpose matrix that represents its position, rotation, and scale 
+	/// </summary>
+	/// <returns></returns>
+	DirectX::XMFLOAT4X4 GetWorldInverseTransposeMatrix();
+	#pragma endregion
+
+	#pragma region MUTATORS
+	/// <summary>
+	/// Shift this transform's position without taking rotation into account 
+	/// </summary>
+	void MoveAbs(float x, float y, float z);
+	/// <summary>
+	/// Shift this transform's position without taking rotation into account 
+	/// </summary>
+	void MoveAbs(DirectX::XMFLOAT3 offset);
+	/// <summary>
+	/// Rotate this transform by a given quaternion  
+	/// </summary>
+	void Rotate(float x, float y, float z, float w);
+	/// <summary>
+	/// Rotate this transform by a given quaternion 
+	/// </summary>
+	void Rotate(DirectX::XMFLOAT4);
+	/// <summary>
+	/// Scale this transform for each axis 
+	/// </summary>
+	void Scale(float x, float y, float z);
+	/// <summary>
+	/// Scale this transform for each axis 
+	/// </summary>
+	void Scale(DirectX::XMFLOAT3 scale);
+	/// <summary>
+	/// Scale this transform in all axis
+	/// </summary>
+	void Scale(float scale);
+	#pragma endregion
+
+};

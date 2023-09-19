@@ -10,7 +10,7 @@ cbuffer ExternalData : register(b0)
 	// Since we need to know exactly how long items being passed are into
 	// the shader this can cause a large issue for us.
 	float4 colorTint;
-	float3 offset;
+	matrix world; // Equivelent to 4x4 
 }
 
 
@@ -67,7 +67,7 @@ VertexToPixel main( VertexShaderInput input )
 	//   which we're leaving at 1.0 for now (this is more useful when dealing with 
 	//   a perspective projection matrix, which we'll get to in the future).
 	//output.screenPosition = float4(input.localPosition, 1.0f);
-	output.screenPosition = float4(input.localPosition + offset, 1.0f);
+	output.screenPosition = mul(world, float4(input.localPosition, 1.0f));
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer
 	// - We don't need to alter it here, but we do need to send it to the pixel shader

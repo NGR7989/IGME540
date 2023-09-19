@@ -350,7 +350,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 		VertexShaderExternalData vsData;
 		vsData.colorTint = XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
-		vsData.offset = XMFLOAT3(worldOrigin);
+		//vsData.offset = XMFLOAT3(worldOrigin);
 
 		D3D11_MAPPED_SUBRESOURCE mappedBuffer = {}; // Holds a memory position to the created resource 
 		context->Map(vsConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer); // Lets is safely discard all data currently in buffer
