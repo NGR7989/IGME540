@@ -13,12 +13,19 @@ private:
 	/// </summary>
 	DirectX::XMFLOAT3 scale;
 	/// <summary>
-	/// Represents this objects rotation as a quaternion 
+	/// Represents this objects rotation as a euler 
 	/// </summary>
-	DirectX::XMFLOAT4 rotation;
+	DirectX::XMFLOAT3 eulerRotation;
 
 	DirectX::XMFLOAT4X4 world;
 	DirectX::XMFLOAT4X4 worldTranspose;
+
+	/// <summary>
+	/// Set the matricies so that they accomodate mutations 
+	/// </summary>
+	void CleanMatrices();
+
+	bool isDirty;
 
 public:
 	/// <summary>
@@ -37,14 +44,14 @@ public:
 	/// <param name="position"></param>
 	void SetPosition(DirectX::XMFLOAT3 position);
 	/// <summary>
-	/// Sets the rotation of this transform to the given quaternion components 
+	/// Sets the rotation of this transform to the given euler angles 
 	/// </summary>
-	void SetRotation(float x, float y, float z, float w);
+	void SetEulerRotation(float pitch, float yaw, float roll);
 	/// <summary>
-	/// Sets the rotation of this transform to the given quaternion 
+	/// Sets the rotation of this transform to the given euler angles 
 	/// </summary>
 	/// <param name="rotation"></param>
-	void SetRotation(DirectX::XMFLOAT4 rotation);
+	void SetEulerRotation(DirectX::XMFLOAT3 rotation);
 	/// <summary>
 	/// Sets the scale of this transform to the given components
 	/// </summary>
@@ -67,10 +74,10 @@ public:
 	/// <returns></returns>
 	DirectX::XMFLOAT3 GetPosition();
 	/// <summary>
-	/// Get this transform's current quaternion rotation 
+	/// Get this transform's current euler rotation 
 	/// </summary>
 	/// <returns></returns>
-	DirectX::XMFLOAT4 GetRotation();
+	DirectX::XMFLOAT3 GetEulerRotation();
 	/// <summary>
 	/// Get this transform's current x, y, and z scalar components 
 	/// </summary>
@@ -98,13 +105,13 @@ public:
 	/// </summary>
 	void MoveAbs(DirectX::XMFLOAT3 offset);
 	/// <summary>
-	/// Rotate this transform by a given quaternion  
+	/// Rotate this transform by the given euler angles
 	/// </summary>
-	void Rotate(float x, float y, float z, float w);
+	void RotateEuler(float pitch, float yaw, float roll);
 	/// <summary>
-	/// Rotate this transform by a given quaternion 
+	/// Rotate this transform by the given euler angles
 	/// </summary>
-	void Rotate(DirectX::XMFLOAT4);
+	void RotateEuler(DirectX::XMFLOAT3);
 	/// <summary>
 	/// Scale this transform for each axis 
 	/// </summary>

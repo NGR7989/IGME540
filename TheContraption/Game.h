@@ -7,7 +7,7 @@
 #include <memory>
 
 #include <vector>
-#include "Mesh.h"
+#include "Entity.h"
 
 class Game 
 	: public DXCore
@@ -30,6 +30,10 @@ private:
 	void LoadShaders(); 
 	void CreateGeometry();
 
+	// Gui
+	void UpdateImGui(float deltaTime);
+	void CreateEntityGui(std::shared_ptr<Entity> entity);
+
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
 	//     Component Object Model, which DirectX objects do
@@ -46,7 +50,7 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstantBuffer;
 
-	std::vector<std::shared_ptr<Mesh>> meshes;
+	std::vector<std::shared_ptr<Entity>> entities;
 
 
 	float worldOrigin[3] = { 0.10f, 0.20f, 0.30f };

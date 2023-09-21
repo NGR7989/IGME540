@@ -5,6 +5,7 @@
 
 #include <memory>
 #include "Mesh.h"
+#include "Transform.h"
 
 // Assumes files are in "ImGui" subfolder!
 // Adjust path as necessary
@@ -43,7 +44,7 @@ Game::Game(HINSTANCE hInstance)
 	CreateConsoleWindow(500, 120, 32, 120);
 	printf("Console window created successfully.  Feel free to printf() here.\n");
 
-	meshes = std::vector<std::shared_ptr<Mesh>>();
+	entities = std::vector<std::shared_ptr<Entity>>();
 #endif
 }
 
@@ -127,6 +128,7 @@ void Game::Init()
 	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
 
 	device->CreateBuffer(&cbDesc, 0, vsConstantBuffer.GetAddressOf());
+
 }
 
 // --------------------------------------------------------
@@ -239,7 +241,7 @@ void Game::CreateGeometry()
 	unsigned int indices[] = { 0, 1, 2 };
 
 	std::shared_ptr<Mesh> triangle = std::make_shared<Mesh>(device, context, vertices, indices, sizeof(vertices) / sizeof(Vertex), sizeof(indices) / sizeof(unsigned int));
-	meshes.push_back(triangle);
+	
 
 
 	// Square 
@@ -253,7 +255,6 @@ void Game::CreateGeometry()
 	unsigned int indicesB[] = { 0, 1, 2, 0, 2, 3 };
 
 	std::shared_ptr<Mesh> square = std::make_shared<Mesh>(device, context, verticesB, indicesB, sizeof(verticesB) / sizeof(Vertex), sizeof(indicesB) / sizeof(unsigned int));
-	meshes.push_back(square);
 
 
 	Vertex verticesC[] =
@@ -275,7 +276,14 @@ void Game::CreateGeometry()
 	unsigned int indicesC[] = { 2, 0, 1,  2, 4, 0,  4, 5, 0,  1, 5, 6,  5, 7, 6};
 
 	std::shared_ptr<Mesh> bow = std::make_shared<Mesh>(device, context, verticesC, indicesC, sizeof(verticesC) / sizeof(Vertex), sizeof(indicesC) / sizeof(unsigned int));
-	meshes.push_back(bow);
+
+
+	// Add all entites to the primary vector 
+	entities.push_back(std::shared_ptr<Entity>(new Entity(triangle)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(triangle)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(square)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(square)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(bow)));
 }
 
 
@@ -290,10 +298,20 @@ void Game::OnResize()
 	DXCore::OnResize();
 }
 
-// --------------------------------------------------------
-// Update your game here - user input, move objects, AI, etc.
-// --------------------------------------------------------
-void Game::Update(float deltaTime, float totalTime)
+
+void Game::CreateEntityGui(std::shared_ptr<Entity> entity)
+{
+	Transform* trans = entity->GetTransform();
+	XMFLOAT3 pos = trans->GetPosition();
+	XMFLOAT3 rot = trans->GetEulerRotation();
+	XMFLOAT3 sca = trans->GetScale();
+
+	if (ImGui::DragFloat3("Position", &pos.x, 0.01f)) trans->SetPosition(pos);
+	if (ImGui::DragFloat3("Rotation (Radians)", &rot.x, 0.01f)) trans->SetEulerRotation(rot);
+	if (ImGui::DragFloat3("Scale", &sca.x, 0.01f)) trans->SetScale(sca);
+}
+
+void Game::UpdateImGui(float deltaTime)
 {
 	// Feed fresh input data to ImGui
 	ImGuiIO& io = ImGui::GetIO();
@@ -301,7 +319,6 @@ void Game::Update(float deltaTime, float totalTime)
 	io.DisplaySize.x = (float)this->windowWidth;
 	io.DisplaySize.y = (float)this->windowHeight;
 
-	
 
 	// Reset the frame
 	ImGui_ImplDX11_NewFrame();
@@ -312,16 +329,52 @@ void Game::Update(float deltaTime, float totalTime)
 	Input& input = Input::GetInstance();
 	input.SetKeyboardCapture(io.WantCaptureKeyboard);
 	input.SetMouseCapture(io.WantCaptureMouse);
-	// Show the demo window
-	//ImGui::ShowDemoWindow();
-	
+
 	float frameRate = ImGui::GetIO().Framerate;
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
 		1000.0 / frameRate, frameRate);
 	ImGui::Text("Window Width: %i", windowWidth);
 	ImGui::Text("Window Height: %i", windowHeight);
 
-	ImGui::DragFloat3("drag float3", worldOrigin, 0.02f, 0.0f, 100.0f);
+
+	if (ImGui::TreeNode("Meshes"))
+	{
+		for (unsigned int i = 0; i < entities.size(); i++)
+		{
+			// Unique id
+			ImGui::PushID(i);
+			if (ImGui::TreeNode("Entity")) // How to make name based on id? 
+			{
+				CreateEntityGui(entities[i]);
+				ImGui::TreePop();
+			}
+
+			ImGui::PopID();
+		}
+
+		ImGui::TreePop();
+	}
+}
+
+// --------------------------------------------------------
+// Update your game here - user input, move objects, AI, etc.
+// --------------------------------------------------------
+void Game::Update(float deltaTime, float totalTime)
+{
+	UpdateImGui(deltaTime);
+
+	entities[0]->GetTransform()->SetPosition((float)cos(totalTime) / 2.0f, 0, 0);
+	entities[0]->GetTransform()->RotateEuler(0.0f, 0.0f, deltaTime * 2.0f);
+
+	entities[1]->GetTransform()->SetPosition(0.0f, 1.3f, 0.0f);
+	entities[1]->GetTransform()->SetScale((float)(cos(totalTime) + 1.1f) / 2.0f, (float)(sin(totalTime) + 1.5f) / 4.0f, 1.0f);
+
+	entities[2]->GetTransform()->MoveAbs(deltaTime * 0.2f, 0, 0);
+
+	entities[3]->GetTransform()->RotateEuler(0, 0, deltaTime * 0.5f);
+
+	entities[4]->GetTransform()->SetPosition((float)(sin(totalTime)), (float)(sin(totalTime)), 0);
+
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::GetInstance().KeyDown(VK_ESCAPE))
 		Quit();
@@ -345,25 +398,9 @@ void Game::Draw(float deltaTime, float totalTime)
 	}
 
 	
-
-	for (unsigned int i = 0; i < meshes.size(); i++)
+	for (unsigned int i = 0; i < entities.size(); i++)
 	{
-		VertexShaderExternalData vsData;
-		vsData.colorTint = XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
-		//vsData.offset = XMFLOAT3(worldOrigin);
-
-		D3D11_MAPPED_SUBRESOURCE mappedBuffer = {}; // Holds a memory position to the created resource 
-		context->Map(vsConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer); // Lets is safely discard all data currently in buffer
-		memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
-		context->Unmap(vsConstantBuffer.Get(), 0);
-
-		context->VSSetConstantBuffers(
-			0, // Which slot (register) to bind the buffer to?
-			1, // How many are we activating? Can do multiple at once
-			vsConstantBuffer.GetAddressOf()); // Array of buffers (or the address of one)
-		//printf("%f", vsData.offset.x);
-
-		meshes[i]->Draw();
+		entities[i]->Draw(context, vsConstantBuffer);
 	}
 
 	// Frame END
