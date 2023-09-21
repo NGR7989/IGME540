@@ -336,8 +336,8 @@ void Game::UpdateImGui(float deltaTime)
 	ImGui::Text("Window Width: %i", windowWidth);
 	ImGui::Text("Window Height: %i", windowHeight);
 
-
-	if (ImGui::TreeNode("Meshes"))
+	// Display Entity data 
+	if (ImGui::TreeNode("Entities"))
 	{
 		for (unsigned int i = 0; i < entities.size(); i++)
 		{
@@ -363,16 +363,13 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	UpdateImGui(deltaTime);
 
+	// Update the transform stuff for current assignment 
 	entities[0]->GetTransform()->SetPosition((float)cos(totalTime) / 2.0f, 0, 0);
 	entities[0]->GetTransform()->RotateEuler(0.0f, 0.0f, deltaTime * 2.0f);
-
 	entities[1]->GetTransform()->SetPosition(0.0f, 1.3f, 0.0f);
 	entities[1]->GetTransform()->SetScale((float)(cos(totalTime) + 1.1f) / 2.0f, (float)(sin(totalTime) + 1.5f) / 4.0f, 1.0f);
-
 	entities[2]->GetTransform()->MoveAbs(deltaTime * 0.2f, 0, 0);
-
 	entities[3]->GetTransform()->RotateEuler(0, 0, deltaTime * 0.5f);
-
 	entities[4]->GetTransform()->SetPosition((float)(sin(totalTime)), (float)(sin(totalTime)), 0);
 
 	// Example input checking: Quit if the escape key is pressed

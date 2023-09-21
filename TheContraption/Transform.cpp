@@ -67,21 +67,6 @@ void Transform::SetScale(float s)
 	isDirty = true;
 }
 
-DirectX::XMFLOAT3 Transform::GetPosition()
-{
-	return position;
-}
-
-DirectX::XMFLOAT3 Transform::GetEulerRotation()
-{
-	return eulerRotation;
-}
-
-DirectX::XMFLOAT3 Transform::GetScale()
-{
-	return scale;
-}
-
 void Transform::CleanMatrices()
 {
 	// Create a new world if transform has been mutated 
@@ -92,7 +77,7 @@ void Transform::CleanMatrices()
 			DirectX::XMMatrixTranslationFromVector(
 				DirectX::XMLoadFloat3(&position));
 
-		DirectX::XMMATRIX rot = 
+		DirectX::XMMATRIX rot =
 			DirectX::XMMatrixRotationRollPitchYawFromVector(DirectX::XMLoadFloat3(&eulerRotation));
 
 		DirectX::XMMATRIX sc =
@@ -107,6 +92,21 @@ void Transform::CleanMatrices()
 
 		isDirty = false;
 	}
+}
+
+DirectX::XMFLOAT3 Transform::GetPosition()
+{
+	return position;
+}
+
+DirectX::XMFLOAT3 Transform::GetEulerRotation()
+{
+	return eulerRotation;
+}
+
+DirectX::XMFLOAT3 Transform::GetScale()
+{
+	return scale;
 }
 
 DirectX::XMFLOAT4X4 Transform::GetWorldMatrix()
