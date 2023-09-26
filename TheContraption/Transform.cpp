@@ -11,6 +11,39 @@ Transform::Transform() :
 	isDirty = true;
 }
 
+#pragma region HELPERS
+
+void Transform::CleanMatrices()
+{
+	// Create a new world if transform has been mutated 
+	if (isDirty)
+	{
+		// Get each of parts that represent the world matrix 
+		DirectX::XMMATRIX pos =
+			DirectX::XMMatrixTranslationFromVector(
+				DirectX::XMLoadFloat3(&position));
+
+		DirectX::XMMATRIX rot =
+			DirectX::XMMatrixRotationRollPitchYawFromVector(DirectX::XMLoadFloat3(&eulerRotation));
+
+		DirectX::XMMATRIX sc =
+			DirectX::XMMatrixScalingFromVector(
+				XMLoadFloat3(&scale));
+
+		// Update the matricies 
+		DirectX::XMMATRIX wm = pos * rot * sc;
+		DirectX::XMStoreFloat4x4(&world, wm);
+		DirectX::XMStoreFloat4x4(&worldTranspose,
+			DirectX::XMMatrixInverse(0, DirectX::XMMatrixTranspose(wm)));
+
+		isDirty = false;
+	}
+}
+
+#pragma endregion 
+
+#pragma region SETTERS
+
 void Transform::SetPosition(float x, float y, float z)
 {
 	// Was there a XMFloat function for this? 
@@ -67,33 +100,9 @@ void Transform::SetScale(float s)
 	isDirty = true;
 }
 
-void Transform::CleanMatrices()
-{
-	// Create a new world if transform has been mutated 
-	if (isDirty)
-	{
-		// Get each of parts that represent the world matrix 
-		DirectX::XMMATRIX pos =
-			DirectX::XMMatrixTranslationFromVector(
-				DirectX::XMLoadFloat3(&position));
+#pragma endregion
 
-		DirectX::XMMATRIX rot =
-			DirectX::XMMatrixRotationRollPitchYawFromVector(DirectX::XMLoadFloat3(&eulerRotation));
-
-		DirectX::XMMATRIX sc =
-			DirectX::XMMatrixScalingFromVector(
-				XMLoadFloat3(&scale));
-
-		// Update the matricies 
-		DirectX::XMMATRIX wm = pos * rot * sc;
-		DirectX::XMStoreFloat4x4(&world, wm);
-		DirectX::XMStoreFloat4x4(&worldTranspose,
-			DirectX::XMMatrixInverse(0, DirectX::XMMatrixTranspose(wm)));
-
-		isDirty = false;
-	}
-}
-
+#pragma region GETTERS
 DirectX::XMFLOAT3 Transform::GetPosition()
 {
 	return position;
@@ -121,6 +130,9 @@ DirectX::XMFLOAT4X4 Transform::GetWorldInverseTransposeMatrix()
 	return worldTranspose;
 }
 
+#pragma endregion
+
+#pragma region MUTATORS 
 void Transform::MoveAbs(float x, float y, float z)
 {
 	this->position.x += x;
@@ -135,6 +147,39 @@ void Transform::MoveAbs(DirectX::XMFLOAT3 offset)
 	this->position.y += offset.y;
 	this->position.z += offset.z;
 	isDirty = true;
+}
+
+void Transform::MoveRelative(float x, float y, float z)
+{
+	// Setup 
+	DirectX::XMVECTOR rotEuler = DirectX::XMLoadFloat3(&eulerRotation);
+	DirectX::XMVECTOR pos = DirectX::XMLoadFloat3(&position);
+
+	
+	// Turn the euler angles into a quaternion 
+	DirectX::XMVECTOR rotQuat = DirectX::XMQuaternionRotationRollPitchYaw(
+		DirectX::XMVectorGetIntX(rotEuler),
+		DirectX::XMVectorGetIntY(rotEuler),
+		DirectX::XMVectorGetIntZ(rotEuler)
+	);
+	
+	// Creat the movement variable 
+	DirectX::XMFLOAT3 toMoveHold(x, y, z);
+	DirectX::XMVECTOR toMove = DirectX::XMLoadFloat3(&toMoveHold);
+
+	// Convert to local space 
+	toMove = DirectX::XMVector3Rotate(toMove, rotQuat);
+
+	// Add in local space 
+	toMove = DirectX::XMVectorAdd(pos, toMove);
+
+	// Store 
+	DirectX::XMStoreFloat3(&position, toMove);
+}
+
+void Transform::MoveRelative(DirectX::XMFLOAT3)
+{
+
 }
 
 void Transform::RotateEuler(float pitch, float yaw, float roll)
@@ -181,3 +226,5 @@ void Transform::Scale(float scale)
 
 	isDirty = true;
 }
+
+#pragma endregion

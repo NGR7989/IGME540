@@ -105,6 +105,14 @@ public:
 	/// </summary>
 	void MoveAbs(DirectX::XMFLOAT3 offset);
 	/// <summary>
+	/// Shift this transform's position with taking rotation into account 
+	/// </summary>
+	void MoveRelative(float x, float y, float z);
+	/// <summary>
+	/// Shift this transform's position with taking rotation into account 
+	/// </summary>
+	void MoveRelative(DirectX::XMFLOAT3 offset);
+	/// <summary>
 	/// Rotate this transform by the given euler angles
 	/// </summary>
 	void RotateEuler(float pitch, float yaw, float roll);
