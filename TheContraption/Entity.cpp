@@ -16,11 +16,15 @@ Transform* Entity::GetTransform()
 	return &transform; 
 }
 
-void Entity::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstantBuffer)
+void Entity::Draw(
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, 
+	Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstantBuffer,
+	std::shared_ptr<Camera> camera)
 {
 	VertexShaderExternalData vsData;
 	vsData.colorTint = DirectX::XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
 	vsData.world = transform.GetWorldMatrix();
+	//vsData.viewMatrix = camera->Get
 
 	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {}; // Holds a memory position to the created resource 
 	context->Map(vsConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer); // Lets is safely discard all data currently in buffer

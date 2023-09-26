@@ -24,8 +24,15 @@ private:
 	/// Set the matricies so that they accomodate mutations 
 	/// </summary>
 	void CleanMatrices();
+	void CleanVectors();
 
-	bool isDirty;
+	bool matIsDirty;
+	bool dirIsDirty;
+
+	// Local Vectors 
+	DirectX::XMFLOAT3 right;
+	DirectX::XMFLOAT3 up;
+	DirectX::XMFLOAT3 forward;
 
 public:
 	/// <summary>
@@ -93,6 +100,21 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	DirectX::XMFLOAT4X4 GetWorldInverseTransposeMatrix();
+	/// <summary>
+	/// Get the vector that represents the direction right in orientation 
+	/// </summary>
+	/// <returns></returns>
+	DirectX::XMFLOAT3 GetRight();
+	/// <summary>
+	/// Get the vector that represents the direction up in orientation 
+	/// </summary>
+	/// <returns></returns>
+	DirectX::XMFLOAT3 GetUp();
+	/// <summary>
+	/// Get the vector that represents the direction forward in orientation 
+	/// </summary>
+	/// <returns></returns>
+	DirectX::XMFLOAT3 GetForward();
 	#pragma endregion
 
 	#pragma region MUTATORS

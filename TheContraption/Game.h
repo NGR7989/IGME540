@@ -8,6 +8,7 @@
 
 #include <vector>
 #include "Entity.h"
+#include "Camera.h"
 
 class Game 
 	: public DXCore
@@ -54,5 +55,6 @@ private:
 
 
 	float worldOrigin[3] = { 0.10f, 0.20f, 0.30f };
+	std::shared_ptr<Camera> camera; 
 };
 

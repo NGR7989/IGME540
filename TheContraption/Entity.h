@@ -5,6 +5,7 @@
 #include "Transform.h"
 #include "Mesh.h"
 #include "BufferStructs.h"
+#include "Camera.h"
 
 
 class Entity
@@ -21,6 +22,6 @@ public:
 
 	// In the future this could be allocated to a rendering class that holds all drawing data intstead
 	// of objects drawing themselves 
-	void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstantBuffer);
+	void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstantBuffer, std::shared_ptr<Camera>);
 };
 

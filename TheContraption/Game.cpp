@@ -6,6 +6,7 @@
 #include <memory>
 #include "Mesh.h"
 #include "Transform.h"
+#include "Input.h"
 
 // Assumes files are in "ImGui" subfolder!
 // Adjust path as necessary
@@ -126,6 +127,15 @@ void Game::Init()
 	cbDesc.ByteWidth = size; // Must be a multiple of 16
 	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+
+	// Create the camera 
+	camera = std::make_shared<Camera>(
+		0.0f, 0.0f, -5.0f,
+		5.0f,
+		1.0f,
+		XM_PIDIV4,
+		this->windowWidth / this->windowHeight
+		);
 
 	device->CreateBuffer(&cbDesc, 0, vsConstantBuffer.GetAddressOf());
 
@@ -362,6 +372,7 @@ void Game::UpdateImGui(float deltaTime)
 void Game::Update(float deltaTime, float totalTime)
 {
 	UpdateImGui(deltaTime);
+	float mouseLookSpeed = 2.0f;
 
 	// Update the transform stuff for current assignment 
 	entities[0]->GetTransform()->SetPosition((float)cos(totalTime) / 2.0f, 0, 0);
@@ -371,6 +382,21 @@ void Game::Update(float deltaTime, float totalTime)
 	entities[2]->GetTransform()->MoveAbs(deltaTime * 0.2f, 0, 0);
 	entities[3]->GetTransform()->RotateEuler(0, 0, deltaTime * 0.5f);
 	entities[4]->GetTransform()->SetPosition((float)(sin(totalTime)), (float)(sin(totalTime)), 0);
+
+	Input& input = Input::GetInstance();
+	if (input.KeyDown('W'))
+	{
+		printf("Forward!");
+	}
+
+	if (input.MouseLeftDown())
+	{
+		float xDiff = mouseLookSpeed * input.GetMouseXDelta();
+		float yDiff = mouseLookSpeed * input.GetMouseYDelta();
+		// roate camera 
+	}
+
+	camera->Update(deltaTime);
 
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::GetInstance().KeyDown(VK_ESCAPE))
@@ -397,7 +423,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
-		entities[i]->Draw(context, vsConstantBuffer);
+		entities[i]->Draw(context, vsConstantBuffer, camera);
 	}
 
 	// Frame END

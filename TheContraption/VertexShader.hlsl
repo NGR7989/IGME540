@@ -11,6 +11,8 @@ cbuffer ExternalData : register(b0)
 	// the shader this can cause a large issue for us.
 	float4 colorTint;
 	matrix world; // Equivelent to 4x4 
+	matrix viewMatrix;
+	matrix projMatrix;
 }
 
 
