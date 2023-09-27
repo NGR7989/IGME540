@@ -35,11 +35,28 @@ void Camera::Update(float dt)
 	if (input.KeyDown('W')) 
 	{
 		transform->MoveRelative(0, 0, moveSpeed * dt);
-		printf("%f \n", transform->GetPosition().x);
 	}
-	if (input.KeyDown('S')) 
+	else if (input.KeyDown('S')) 
 	{
 		transform->MoveRelative(0, 0, -moveSpeed * dt);
+	}
+
+	if (input.KeyDown('E'))
+	{
+		transform->MoveRelative(0, moveSpeed * dt, 0);
+	}
+	else if (input.KeyDown('Q'))
+	{
+		transform->MoveRelative(0, -moveSpeed * dt, 0);
+	}
+
+	if (input.KeyDown('A'))
+	{
+		transform->MoveRelative(-moveSpeed * dt, 0, 0);
+	}
+	else if (input.KeyDown('D'))
+	{
+		transform->MoveRelative(moveSpeed * dt, 0, 0);
 	}
 
 
@@ -53,13 +70,11 @@ void Camera::Update(float dt)
 		transform->RotateEuler(0, xDiff * mouseLookSpeed, 0);
 	}
 
+	// Reset position 
 	if (input.KeyDown(VK_SPACE))
 	{
 		transform->SetPosition(0, 0, -5);
 	}
-
-	if (input.KeyDown(VK_SHIFT)) { /* Shift is down */ }
-	if (input.KeyDown(VK_CONTROL)) { /* Control is down */ }
 
 	UpdateViewMatrix();
 }

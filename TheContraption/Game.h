@@ -53,8 +53,7 @@ private:
 
 	std::vector<std::shared_ptr<Entity>> entities;
 
-
-	float worldOrigin[3] = { 0.10f, 0.20f, 0.30f };
-	std::shared_ptr<Camera> camera; 
+	int currentCam;
+	std::vector<std::shared_ptr<Camera>> cameras; 
 };
 

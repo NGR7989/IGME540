@@ -46,6 +46,8 @@ Game::Game(HINSTANCE hInstance)
 	printf("Console window created successfully.  Feel free to printf() here.\n");
 
 	entities = std::vector<std::shared_ptr<Entity>>();
+	cameras = std::vector<std::shared_ptr<Camera>>();
+	currentCam = 0;
 #endif
 }
 
@@ -128,17 +130,40 @@ void Game::Init()
 	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
 
-	// Create the camera 
-	camera = std::make_shared<Camera>(
+	// Create the cameras 
+	cameras.push_back(std::make_shared<Camera>(
 		0.0f, 0.0f, -5.0f,						// Pos
 		1.0f,									// Move speed
 		0.1f,									// Mouse look speed 
 		XM_PIDIV4,								// FOV 
 		this->windowWidth / this->windowHeight	// Aspect ratio 
-		);
+		));
+
+	cameras.push_back(std::make_shared<Camera>(
+		0.0f, 0.0f, -20.0f,						// Pos
+		3.0f,									// Move speed
+		0.1f,									// Mouse look speed 
+		XM_PIDIV4,								// FOV 
+		this->windowWidth / this->windowHeight	// Aspect ratio 
+		));
+
+	cameras.push_back(std::make_shared<Camera>(
+		2.0f, 1.5f, -15.0f,						// Pos
+		1.0f,									// Move speed
+		0.1f,									// Mouse look speed 
+		XM_PI / 8,								// FOV 
+		this->windowWidth / this->windowHeight	// Aspect ratio 
+		));
+
+	cameras.push_back(std::make_shared<Camera>(
+		-1.0f, 1.0f, -5.0f,						// Pos
+		1.0f,									// Move speed
+		0.1f,									// Mouse look speed 
+		XM_PIDIV2,								// FOV 
+		this->windowWidth / this->windowHeight	// Aspect ratio 
+		));
 
 	device->CreateBuffer(&cbDesc, 0, vsConstantBuffer.GetAddressOf());
-
 }
 
 // --------------------------------------------------------
@@ -307,7 +332,7 @@ void Game::OnResize()
 	// Handle base-level DX resize stuff
 	DXCore::OnResize();
 
-	camera.get()->UpdateProjMatrix(
+	cameras[currentCam].get()->UpdateProjMatrix(
 		XM_PIDIV4,										// FOV 
 		(float)this->windowWidth / this->windowHeight	// Aspect Ratio
 	);
@@ -369,6 +394,28 @@ void Game::UpdateImGui(float deltaTime)
 
 		ImGui::TreePop();
 	}
+
+
+	const char* items[] = { "Cam0", "Cam1", "Cam2", "Cam3"};
+	static const char* current_item = items[0];
+
+	if (ImGui::BeginCombo("Cameras", current_item)) // The second parameter is the label previewed before opening the combo.
+	{
+		for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+		{
+			bool is_selected = (current_item != items[n]); // New item 
+			if (ImGui::Selectable(items[n], is_selected))
+			{
+				current_item = items[n];
+				if (is_selected)
+				{
+					ImGui::SetItemDefaultFocus();
+					currentCam = n;
+				}
+			}
+		}
+		ImGui::EndCombo();
+	}
 }
 
 // --------------------------------------------------------
@@ -391,7 +438,7 @@ void Game::Update(float deltaTime, float totalTime)
 
 	
 
-	camera->Update(deltaTime);
+	cameras[currentCam]->Update(deltaTime);
 
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::GetInstance().KeyDown(VK_ESCAPE))
@@ -418,7 +465,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
-		entities[i]->Draw(context, vsConstantBuffer, camera);
+		entities[i]->Draw(context, vsConstantBuffer, cameras[currentCam]);
 	}
 
 	// Frame END
