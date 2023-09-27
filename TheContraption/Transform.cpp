@@ -81,6 +81,7 @@ void Transform::SetEulerRotation(float pitch, float yaw, float roll)
 	eulerRotation.z = roll;
 
 	matIsDirty = true;
+	dirIsDirty = true;
 }
 
 void Transform::SetEulerRotation(DirectX::XMFLOAT3 rotation)
@@ -88,6 +89,7 @@ void Transform::SetEulerRotation(DirectX::XMFLOAT3 rotation)
 	this->eulerRotation = rotation;
 
 	matIsDirty = true;
+	dirIsDirty = true;
 }
 
 void Transform::SetScale(float x, float y, float z)
@@ -188,14 +190,9 @@ void Transform::MoveAbs(DirectX::XMFLOAT3 offset)
 
 void Transform::MoveRelative(float x, float y, float z)
 {
-	// Setup 
-	DirectX::XMVECTOR rotEuler = DirectX::XMLoadFloat3(&eulerRotation);
-	
 	// Turn the euler angles into a quaternion 
-	DirectX::XMVECTOR rotQuat = DirectX::XMQuaternionRotationRollPitchYaw(
-		DirectX::XMVectorGetIntX(rotEuler),
-		DirectX::XMVectorGetIntY(rotEuler),
-		DirectX::XMVectorGetIntZ(rotEuler)
+	DirectX::XMVECTOR rotQuat = DirectX::XMQuaternionRotationRollPitchYawFromVector(
+		DirectX::XMLoadFloat3(&eulerRotation)
 	);
 	
 	// Creat the movement variable 

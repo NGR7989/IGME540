@@ -35,6 +35,7 @@ void Camera::Update(float dt)
 	if (input.KeyDown('W')) 
 	{
 		transform->MoveRelative(0, 0, moveSpeed * dt);
+		printf("%f \n", transform->GetPosition().x);
 	}
 	if (input.KeyDown('S')) 
 	{
@@ -48,8 +49,13 @@ void Camera::Update(float dt)
 		float yDiff = mouseLookSpeed * input.GetMouseYDelta();
 		// roate camera 
 
-		transform->RotateEuler(yDiff * mouseLookSpeed, 0, 0);
+		transform->RotateEuler( yDiff * mouseLookSpeed, 0, 0);
 		transform->RotateEuler(0, xDiff * mouseLookSpeed, 0);
+	}
+
+	if (input.KeyDown(VK_SPACE))
+	{
+		transform->SetPosition(0, 0, -5);
 	}
 
 	if (input.KeyDown(VK_SHIFT)) { /* Shift is down */ }
