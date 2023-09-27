@@ -6,7 +6,7 @@
 #include <memory>
 #include "Mesh.h"
 #include "Transform.h"
-#include "Input.h"
+
 
 // Assumes files are in "ImGui" subfolder!
 // Adjust path as necessary
@@ -130,11 +130,11 @@ void Game::Init()
 
 	// Create the camera 
 	camera = std::make_shared<Camera>(
-		0.0f, 0.0f, -5.0f,
-		5.0f,
-		1.0f,
-		XM_PIDIV4,
-		this->windowWidth / this->windowHeight
+		0.0f, 0.0f, -5.0f,						// Pos
+		1.0f,									// Move speed
+		0.1f,									// Mouse look speed 
+		XM_PIDIV4,								// FOV 
+		this->windowWidth / this->windowHeight	// Aspect ratio 
 		);
 
 	device->CreateBuffer(&cbDesc, 0, vsConstantBuffer.GetAddressOf());
@@ -306,6 +306,11 @@ void Game::OnResize()
 {
 	// Handle base-level DX resize stuff
 	DXCore::OnResize();
+
+	camera.get()->UpdateProjMatrix(
+		XM_PIDIV4,										// FOV 
+		(float)this->windowWidth / this->windowHeight	// Aspect Ratio
+	);
 }
 
 
@@ -383,18 +388,8 @@ void Game::Update(float deltaTime, float totalTime)
 	entities[3]->GetTransform()->RotateEuler(0, 0, deltaTime * 0.5f);
 	entities[4]->GetTransform()->SetPosition((float)(sin(totalTime)), (float)(sin(totalTime)), 0);
 
-	Input& input = Input::GetInstance();
-	if (input.KeyDown('W'))
-	{
-		printf("Forward!");
-	}
 
-	if (input.MouseLeftDown())
-	{
-		float xDiff = mouseLookSpeed * input.GetMouseXDelta();
-		float yDiff = mouseLookSpeed * input.GetMouseYDelta();
-		// roate camera 
-	}
+	
 
 	camera->Update(deltaTime);
 

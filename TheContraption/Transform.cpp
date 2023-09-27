@@ -214,29 +214,26 @@ void Transform::MoveRelative(float x, float y, float z)
 
 void Transform::MoveRelative(DirectX::XMFLOAT3 vec)
 {
-	//// Setup
-	//	DirectX::XMVECTOR rotEuler = DirectX::XMLoadFloat3(&eulerRotation);
-	//DirectX::XMVECTOR pos = DirectX::XMLoadFloat3(&position);
+	// Setup 
+	DirectX::XMVECTOR rotEuler = DirectX::XMLoadFloat3(&eulerRotation);
+	
+	// Turn the euler angles into a quaternion 
+	DirectX::XMVECTOR rotQuat = DirectX::XMQuaternionRotationRollPitchYaw(
+		DirectX::XMVectorGetIntX(rotEuler),
+		DirectX::XMVectorGetIntY(rotEuler),
+		DirectX::XMVectorGetIntZ(rotEuler)
+	);
+	
+	DirectX::XMVECTOR toMove = DirectX::XMLoadFloat3(&vec);
 
+	// Convert to local space 
+	toMove = DirectX::XMVector3Rotate(toMove, rotQuat);
 
-	//// Turn the euler angles into a quaternion 
-	//DirectX::XMVECTOR rotQuat = DirectX::XMQuaternionRotationRollPitchYaw(
-	//	DirectX::XMVectorGetIntX(rotEuler),
-	//	DirectX::XMVectorGetIntY(rotEuler),
-	//	DirectX::XMVectorGetIntZ(rotEuler)
-	//);
+	// Add in local space 
+	toMove = DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&position), toMove);
 
-	//// Creat the movement variable 
-	//DirectX::XMVECTOR toMove = DirectX::XMLoadFloat3(&vec);
-
-	//// Convert to local space 
-	//toMove = DirectX::XMVector3Rotate(toMove, rotQuat);
-
-	//// Add in local space 
-	//toMove = DirectX::XMVectorAdd(pos, toMove);
-
-	//// Store 
-	//DirectX::XMStoreFloat3(&position, toMove);
+	// Store 
+	DirectX::XMStoreFloat3(&position, toMove);
 
 	matIsDirty = true;
 }
@@ -248,6 +245,7 @@ void Transform::RotateEuler(float pitch, float yaw, float roll)
 	eulerRotation.z += roll;
 
 	matIsDirty = true;
+	dirIsDirty = true;
 }
 
 void Transform::RotateEuler(DirectX::XMFLOAT3 rotation)
@@ -257,6 +255,7 @@ void Transform::RotateEuler(DirectX::XMFLOAT3 rotation)
 	eulerRotation.z += rotation.z;
 
 	matIsDirty = true;
+	dirIsDirty = true;
 }
 
 void Transform::Scale(float x, float y, float z)
