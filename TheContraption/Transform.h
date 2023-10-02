@@ -1,5 +1,7 @@
 #pragma once
 #include <DirectXMath.h>
+#include <memory>
+#include <vector>
 
 class Transform
 {
@@ -25,6 +27,10 @@ private:
 	/// </summary>
 	void CleanMatrices();
 	void CleanVectors();
+	/// <summary>
+	/// Recursive function that sets all matrices to be dirty 
+	/// </summary>
+	void MarkChildTransformsDirty();
 
 	bool matIsDirty;
 	bool dirIsDirty;
@@ -33,6 +39,15 @@ private:
 	DirectX::XMFLOAT3 right;
 	DirectX::XMFLOAT3 up;
 	DirectX::XMFLOAT3 forward;
+
+
+	// Hierachy 
+	std::shared_ptr<Transform> parent;
+	std::vector<std::shared_ptr<Transform>> children;
+
+	// What is this transforms index as a child 
+	// Use -1 as default 
+	int childIndex; 
 
 public:
 	/// <summary>
@@ -156,4 +171,44 @@ public:
 	void Scale(float scale);
 	#pragma endregion
 
+	#pragma region HIERARCHY 
+	/// <summary>
+	/// Adds a child to this 
+	/// </summary>
+	void AddChild(std::shared_ptr<Transform> child, bool makeChildRelative = true);
+	/// <summary>
+	/// Makes the child no longer relative to this transform 
+	/// </summary>
+	void RemoveChild(std::shared_ptr<Transform> child, bool applyParentTransform = true);
+	/// <summary>
+	/// Makes the child no longer relative to this transform 
+	/// </summary>
+	void RemoveChildByIndex(int index, bool applyParentTransform = true);
+	/// <summary>
+	/// Make this trasnform's matrix relative to a parents 
+	/// </summary>
+	void SetParent(std::shared_ptr<Transform> newParent, bool makeChildRelative = true);
+	/// <summary>
+	/// Get the current parent's transform 
+	/// </summary>
+	/// <returns></returns>
+	std::shared_ptr<Transform> GetParent();
+	/// <summary>
+	/// Get the child by index 
+	/// </summary>
+	/// <param name="index"></param>
+	/// <returns></returns>
+	std::shared_ptr<Transform> GetChild(unsigned int index);
+	/// <summary>
+	/// If the child is a child of this trasnform returns its index 
+	/// </summary>
+	/// <param name="child"></param>
+	/// <returns></returns>
+	int IndexOfChild(std::shared_ptr<Transform> child);
+	/// <summary>
+	/// Returns how many children are currently of this transform 
+	/// </summary>
+	/// <returns></returns>
+	unsigned int GetChildCount();
+	#pragma endregion
 };
