@@ -3,8 +3,7 @@
 Transform::Transform() :
 	position(0.0f, 0.0f, 0.0f),
 	eulerRotation(0.0f, 0.0f, 0.0f),
-	scale(1.0f, 1.0f, 1.0f),
-	childIndex(-1)
+	scale(1.0f, 1.0f, 1.0f)
 {
 	DirectX::XMStoreFloat4x4(&world, DirectX::XMMatrixIdentity());
 	DirectX::XMStoreFloat4x4(&worldTranspose, DirectX::XMMatrixIdentity());
@@ -281,66 +280,6 @@ void Transform::Scale(float scale)
 	this->scale.z += scale;
 
 	matIsDirty = true;
-}
-
-#pragma endregion
-
-#pragma region HIERARCHY
-
-void Transform::AddChild(std::shared_ptr<Transform> child, bool makeChildRelative = true)
-{
-	
-}
-
-void Transform::RemoveChild(std::shared_ptr<Transform> child, bool applyParentTransform = true)
-{
-
-}
-
-
-void Transform::RemoveChildByIndex(int index, bool applyParentTransform = true)
-{
-
-}
-
-void Transform::SetParent(std::shared_ptr<Transform> newParent, bool makeChildRelative = true)
-{
-	// Checking if there is currently a parent 
-	if (parent)
-	{
-		parent.get()->RemoveChildByIndex(childIndex);
-	}
-
-	// Make sure that there is a new parent 
-	if (newParent)
-	{
-
-	}
-}
-
-std::shared_ptr<Transform> Transform::GetParent()
-{
-	return parent;
-}
-
-std::shared_ptr<Transform> Transform::GetChild(unsigned int index)
-{
-	// Due to being unsigned this does not need 
-	// to consider being negative 
-	if (index < children.size())
-	{
-		return children[index];
-	}
-}
-
-int Transform::IndexOfChild(std::shared_ptr<Transform> child)
-{
-
-}
-
-unsigned int Transform::GetChildCount()
-{
-	return children.size();
 }
 
 #pragma endregion
