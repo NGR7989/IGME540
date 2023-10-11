@@ -10,6 +10,8 @@
 #include "Entity.h"
 #include "Camera.h"
 
+#include "SimpleShader.h"
+
 class Game 
 	: public DXCore
 {
@@ -45,9 +47,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 	
 	// Shaders and shader-related constructs
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+	std::shared_ptr<SimplePixelShader> pixelShader;
+	std::shared_ptr<SimpleVertexShader> vertexShader;
+	//Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout; TO DELETE 
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstantBuffer;
 
