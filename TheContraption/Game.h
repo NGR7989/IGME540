@@ -11,6 +11,7 @@
 #include "Camera.h"
 
 #include "SimpleShader.h"
+#include "Material.h"
 
 class Game 
 	: public DXCore
@@ -49,13 +50,15 @@ private:
 	// Shaders and shader-related constructs
 	std::shared_ptr<SimplePixelShader> pixelShader;
 	std::shared_ptr<SimpleVertexShader> vertexShader;
-	//Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout; TO DELETE 
-
-	Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstantBuffer;
 
 	std::vector<std::shared_ptr<Entity>> entities;
 
 	int currentCam;
 	std::vector<std::shared_ptr<Camera>> cameras; 
+
+
+	std::shared_ptr<Material> mat1;
+	std::shared_ptr<Material> mat2;
+	std::shared_ptr<Material> mat3;
 };
 

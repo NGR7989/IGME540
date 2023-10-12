@@ -14,8 +14,6 @@
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
 
-#include "BufferStructs.h"
-
 // Needed for a helper function to load pre-compiled shader files
 #pragma comment(lib, "d3dcompiler.lib")
 #include <d3dcompiler.h>
@@ -78,11 +76,16 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+
+	
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
 	CreateGeometry();
+
+	
+
 	
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -113,17 +116,6 @@ void Game::Init()
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX11_Init(device.Get(), context.Get());
 
-
-	// Get size as the next multiple of 16 (instead of hardcoding a size here!)
-	unsigned int size = sizeof(VertexShaderExternalData);
-	size = (size + 15) / 16 * 16; // This will work even if the struct size changes
-
-	// Describe the constant buffer
-	D3D11_BUFFER_DESC cbDesc = {}; // Sets struct to all zeros
-	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cbDesc.ByteWidth = size; // Must be a multiple of 16
-	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
 
 	// Create the cameras 
 	cameras.push_back(std::make_shared<Camera>(
@@ -157,8 +149,6 @@ void Game::Init()
 		XM_PIDIV2,								// FOV 
 		this->windowWidth / this->windowHeight	// Aspect ratio 
 		));
-
-	device->CreateBuffer(&cbDesc, 0, vsConstantBuffer.GetAddressOf());
 }
 
 // --------------------------------------------------------
@@ -254,12 +244,16 @@ void Game::CreateGeometry()
 	std::shared_ptr<Mesh> bow = std::make_shared<Mesh>(device, context, verticesC, indicesC, sizeof(verticesC) / sizeof(Vertex), sizeof(indicesC) / sizeof(unsigned int));
 
 
+	mat1 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), vertexShader, pixelShader);
+	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 0, 1, 1), vertexShader, pixelShader);
+	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), vertexShader, pixelShader);
+
 	// Add all entites to the primary vector 
-	entities.push_back(std::shared_ptr<Entity>(new Entity(triangle)));
-	entities.push_back(std::shared_ptr<Entity>(new Entity(triangle)));
-	entities.push_back(std::shared_ptr<Entity>(new Entity(square)));
-	entities.push_back(std::shared_ptr<Entity>(new Entity(square)));
-	entities.push_back(std::shared_ptr<Entity>(new Entity(bow)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(triangle, mat1)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(triangle, mat2)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat3)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat1)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(bow, mat2)));
 }
 
 
@@ -406,7 +400,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
-		entities[i]->Draw(context, vsConstantBuffer, cameras[currentCam]);
+		entities[i]->Draw(context, cameras[currentCam]);
 	}
 
 	// Frame END
