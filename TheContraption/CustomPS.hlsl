@@ -48,6 +48,9 @@ float gnoise(float2 n) {
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	float col = gnoise(input.uv + float2(time, time));
+	float rA = gnoise(input.uv + float2(time, 0));
+	float rB = gnoise(input.uv + float2(time / 0.5, -time));
+
+	float col = rA + rB - 0.5f;
 	return float4(col, col, col, 1.0);
 }
