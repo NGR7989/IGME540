@@ -194,9 +194,10 @@ void Game::CreateGeometry()
 	//    since we're describing the triangle in terms of the window itself
 	Vertex vertices[] =
 	{
-		{ XMFLOAT3(+0.0f, +0.3f, +0.0f), red },
-		{ XMFLOAT3(+0.3f, -0.3f, +0.0f), blue },
-		{ XMFLOAT3(-0.3f, -0.3f, +0.0f), green },
+		// Pos,	Normal, UV
+		{ XMFLOAT3(+0.0f, +0.3f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(+0.3f, -0.3f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(-0.3f, -0.3f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
 	};
 
 	// Set up indices, which tell us which vertices to use and in which order
@@ -213,10 +214,10 @@ void Game::CreateGeometry()
 	// Square 
 	Vertex verticesB[] =
 	{
-		{ XMFLOAT3(-0.7f, +0.5f, +0.0f), blue },
-		{ XMFLOAT3(-0.4f, +0.5f, +0.0f), blue },
-		{ XMFLOAT3(-0.4f, -0.5f, +0.0f), green },
-		{ XMFLOAT3(-0.7f, -0.5f, +0.0f), green },
+		{ XMFLOAT3(-0.7f, +0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(-0.4f, +0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(-0.4f, -0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(-0.7f, -0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
 	};
 	unsigned int indicesB[] = { 0, 1, 2, 0, 2, 3 };
 
@@ -225,16 +226,16 @@ void Game::CreateGeometry()
 
 	Vertex verticesC[] =
 	{
-		{ XMFLOAT3(+0.8f, +0.8f, +0.0f), red }, // Center Top
+		{ XMFLOAT3(+0.8f, +0.8f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) }, // Center Top
 
-		{ XMFLOAT3(+0.7f, +0.8f, +0.0f), red },
-		{ XMFLOAT3(+0.65f, +0.9f, +0.0f), blue },
-		{ XMFLOAT3(+0.8f, +1.0f, +0.0f), blue },
-		{ XMFLOAT3(+0.95f, +0.9f, +0.0f), blue },
-		{ XMFLOAT3(+0.9f, +0.8f, +0.0f), red },
+		{ XMFLOAT3(+0.7f, +0.8f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(+0.65f, +0.9f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(+0.8f, +1.0f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(+0.95f, +0.9f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(+0.9f, +0.8f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
 		
-		{ XMFLOAT3(+0.6f, +0.1f, +0.0f), blue },
-		{ XMFLOAT3(+1.0f, +0.1f, +0.0f), blue },
+		{ XMFLOAT3(+0.6f, +0.1f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(+1.0f, +0.1f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
 	};
 
 	std::vector<unsigned int> hexVector = std::vector<unsigned int>();
@@ -248,8 +249,10 @@ void Game::CreateGeometry()
 	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 0, 1, 1), vertexShader, pixelShader);
 	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), vertexShader, pixelShader);
 
+	std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/sphere.obj").c_str());
+	
 	// Add all entites to the primary vector 
-	entities.push_back(std::shared_ptr<Entity>(new Entity(triangle, mat1)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, mat1)));
 	entities.push_back(std::shared_ptr<Entity>(new Entity(triangle, mat2)));
 	entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat3)));
 	entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat1)));

@@ -9,7 +9,6 @@ cbuffer ExternalData : register(b0)
 	// cause there to be spacing to be added by direct without telling us 
 	// Since we need to know exactly how long items being passed are into
 	// the shader this can cause a large issue for us.
-	float4 colorTint;
 	matrix world; // Equivelent to 4x4 
 	matrix viewMatrix;
 	matrix projMatrix;
@@ -29,7 +28,7 @@ struct VertexShaderInput
 	//  |    |                |
 	//  v    v                v
 	float3 localPosition	: POSITION;     // XYZ position
-	float4 color			: COLOR;        // RGBA color
+	float4 uv				: TEXCOORD;   
 };
 
 // Struct representing the data we're sending down the pipeline
@@ -45,7 +44,7 @@ struct VertexToPixel
 	//  |    |                |
 	//  v    v                v
 	float4 screenPosition	: SV_POSITION;	// XYZW position (System Value Position)
-	float4 color			: COLOR;        // RGBA color
+	float2 uv				: TEXCOORD;
 };
 
 // --------------------------------------------------------
@@ -77,9 +76,9 @@ VertexToPixel main( VertexShaderInput input )
 	// - The values will be interpolated per-pixel by the rasterizer
 	// - We don't need to alter it here, but we do need to send it to the pixel shader
 	//output.color = input.color;
-	output.color = input.color * colorTint;
+	//output.color = colorTint;
 
-
+	output.uv = input.uv;
 
 	// Whatever we return will make its way through the pipeline to the
 	// next programmable stage we're using (the pixel shader for now)
