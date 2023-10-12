@@ -76,8 +76,6 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
-
-	
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
@@ -165,6 +163,8 @@ void Game::LoadShaders()
 		FixPath(L"VertexShader.cso").c_str());
 	pixelShader = std::make_shared<SimplePixelShader>(device, context,
 		FixPath(L"PixelShader.cso").c_str());
+	customPShader = std::make_shared<SimplePixelShader>(device, context,
+		FixPath(L"CustomPS.cso").c_str());
 }
 
 
@@ -245,7 +245,7 @@ void Game::CreateGeometry()
 	std::shared_ptr<Mesh> bow = std::make_shared<Mesh>(device, context, verticesC, indicesC, sizeof(verticesC) / sizeof(Vertex), sizeof(indicesC) / sizeof(unsigned int));
 
 
-	mat1 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), vertexShader, pixelShader);
+	mat1 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), vertexShader, customPShader);
 	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 0, 1, 1), vertexShader, pixelShader);
 	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), vertexShader, pixelShader);
 
@@ -365,8 +365,8 @@ void Game::Update(float deltaTime, float totalTime)
 	float mouseLookSpeed = 2.0f;
 
 	// Update the transform stuff for current assignment 
-	entities[0]->GetTransform()->SetPosition((float)cos(totalTime) / 2.0f, 0, 0);
-	entities[0]->GetTransform()->RotateEuler(0.0f, 0.0f, deltaTime * 2.0f);
+	//entities[0]->GetTransform()->SetPosition((float)cos(totalTime) / 2.0f, 0, 0);
+	//entities[0]->GetTransform()->RotateEuler(0.0f, 0.0f, deltaTime * 2.0f);
 	entities[1]->GetTransform()->SetPosition(0.0f, 1.3f, 0.0f);
 	entities[1]->GetTransform()->SetScale((float)(cos(totalTime) + 1.1f) / 2.0f, (float)(sin(totalTime) + 1.5f) / 4.0f, 1.0f);
 	entities[2]->GetTransform()->MoveAbs(deltaTime * 0.2f, 0, 0);
@@ -403,6 +403,12 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
+		if (i == 0) // JUST FOR THE NOISE SPHERE
+		{
+			entities[i]->Draw(context, cameras[currentCam], totalTime);
+			continue;
+		}
+
 		entities[i]->Draw(context, cameras[currentCam]);
 	}
 

@@ -2,6 +2,7 @@
 cbuffer ExternalData : register(b0)
 {
 	float4 colorTint;
+	float time;
 }
 
 // Struct representing the data we expect to receive from earlier pipeline stages
@@ -20,6 +21,22 @@ struct VertexToPixel
 	float2 uv				: TEXCOORD;
 };
 
+float rand2(float2 n) { return frac(sin(dot(n, float2(12.9898, 4.1414))) * 43758.5453); }
+float gnoise(float2 n) {
+	const float2 d = float2(0.0, 1.0);
+	float2  b = floor(n),
+		f = smoothstep(d.xx, d.yy, frac(n));
+
+	//float2 f = frac(n);
+	//f = f*f*(3.0-2.0*f);
+
+	float x = lerp(rand2(b), rand2(b + d.yx), f.x),
+		y = lerp(rand2(b + d.xy), rand2(b + d.yy), f.x);
+
+	return lerp(x, y, f.y);
+}
+
+
 // --------------------------------------------------------
 // The entry point (main method) for our pixel shader
 // 
@@ -31,10 +48,6 @@ struct VertexToPixel
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	// Just return the input color
-	// - This color (like most values passing through the rasterizer) is 
-	//   interpolated for each pixel between the corresponding vertices 
-	//   of the triangle we're rendering
-	return float4(input.uv, 0, 1);
-	//return float4(colorTint, 1);
+	float col = gnoise(input.uv + float2(time, time));
+	return float4(col, col, col, 1.0);
 }

@@ -49,6 +49,7 @@ private:
 	
 	// Shaders and shader-related constructs
 	std::shared_ptr<SimplePixelShader> pixelShader;
+	std::shared_ptr<SimplePixelShader> customPShader;
 	std::shared_ptr<SimpleVertexShader> vertexShader;
 
 	std::vector<std::shared_ptr<Entity>> entities;

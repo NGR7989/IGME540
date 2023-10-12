@@ -27,5 +27,6 @@ public:
 	// In the future this could be allocated to a rendering class that holds all drawing data intstead
 	// of objects drawing themselves 
 	void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera>);
+	void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera>, float time); // FOR NOISE DEMO 
 };
 
