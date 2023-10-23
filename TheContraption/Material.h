@@ -7,13 +7,18 @@
 class Material
 {
 public:
-	Material(DirectX::XMFLOAT4 tint, std::shared_ptr<SimpleVertexShader> vertex, std::shared_ptr<SimplePixelShader> pixel);
+	Material(DirectX::XMFLOAT4 tint, float roughness, std::shared_ptr<SimpleVertexShader> vertex, std::shared_ptr<SimplePixelShader> pixel);
 
 	/// <summary>
-	/// Get this materials current color tint 
+	/// Get this material's current color tint 
 	/// </summary>
 	/// <returns></returns>
 	DirectX::XMFLOAT4 GetTint();
+	/// <summary>
+	/// Get this material's current rougness 
+	/// </summary>
+	/// <returns></returns>
+	float GetRoughness();
 	/// <summary>
 	/// Get this material's current vertex shader shared pointer 
 	/// </summary>
@@ -32,6 +37,12 @@ public:
 	void SetTint(DirectX::XMFLOAT4 nextTint);
 
 	/// <summary>
+	/// Set this material's current roughness 
+	/// </summary>
+	/// <param name="nextRoughness"></param>
+	void SetRoughness(float nextRoughness);
+
+	/// <summary>
 	/// Set this material's current vertex shader 
 	/// </summary>
 	/// <param name="nextVertex"></param>
@@ -45,6 +56,8 @@ public:
 
 private:
 	DirectX::XMFLOAT4 tint;
+	DirectX::XMFLOAT3 camPos;
+	float roughness;
 
 	std::shared_ptr<SimpleVertexShader> vertex;
 	std::shared_ptr<SimplePixelShader> pixel;

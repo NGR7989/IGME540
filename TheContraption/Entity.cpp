@@ -47,6 +47,11 @@ void Entity::Draw(
 	std::shared_ptr<SimplePixelShader> ps = mat->GetPixelShader();
 	ps->SetFloat4("colorTint", mat->GetTint());
 
+	//Transform* trans = camera->GetTransform();
+	//DirectX::XMFLOAT3 pos = trans->GetPosition();
+	ps->SetFloat3("camPos", *(camera->GetTransform()->GetPosition().get()));
+	ps->SetFloat("roughness", mat->GetRoughness());
+
 	ps->CopyAllBufferData();
 
 	model->Draw();

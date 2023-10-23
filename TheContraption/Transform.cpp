@@ -1,7 +1,7 @@
 #include "Transform.h"
 
 Transform::Transform() :
-	position(0.0f, 0.0f, 0.0f),
+	position(std::make_shared<DirectX::XMFLOAT3>(0.0f, 0.0f, 0.0f)),
 	eulerRotation(0.0f, 0.0f, 0.0f),
 	scale(1.0f, 1.0f, 1.0f)
 {
@@ -10,6 +10,8 @@ Transform::Transform() :
 
 	matIsDirty = true;
 	dirIsDirty = true;
+
+	CleanVectors();
 }
 
 #pragma region HELPERS
@@ -22,7 +24,7 @@ void Transform::CleanMatrices()
 		// Get each of parts that represent the world matrix 
 		DirectX::XMMATRIX pos =
 			DirectX::XMMatrixTranslationFromVector(
-				DirectX::XMLoadFloat3(&position));
+				DirectX::XMLoadFloat3(position.get()));
 
 		DirectX::XMMATRIX rot =
 			DirectX::XMMatrixRotationRollPitchYawFromVector(DirectX::XMLoadFloat3(&eulerRotation));
@@ -60,16 +62,16 @@ void Transform::CleanVectors()
 void Transform::SetPosition(float x, float y, float z)
 {
 	// Was there a XMFloat function for this? 
-	position.x = x;
-	position.y = y;
-	position.z = z;
+	position.get()->x = x;
+	position.get()->y = y;
+	position.get()->z = z;
 
 	matIsDirty = true;
 }
 
 void Transform::SetPosition(DirectX::XMFLOAT3 position)
 {
-	this->position = position;
+	*(this->position.get()) = position;
 
 	matIsDirty = true;
 }
@@ -118,7 +120,7 @@ void Transform::SetScale(float s)
 #pragma endregion
 
 #pragma region GETTERS
-DirectX::XMFLOAT3 Transform::GetPosition()
+std::shared_ptr<DirectX::XMFLOAT3> Transform::GetPosition()
 {
 	return position;
 }
@@ -174,17 +176,17 @@ DirectX::XMFLOAT3 Transform::GetForward()
 #pragma region MUTATORS 
 void Transform::MoveAbs(float x, float y, float z)
 {
-	this->position.x += x;
-	this->position.y += y;
-	this->position.z += z;
+	this->position.get()->x += x;
+	this->position.get()->y += y;
+	this->position.get()->z += z;
 	matIsDirty = true;
 }
 
 void Transform::MoveAbs(DirectX::XMFLOAT3 offset)
 {
-	this->position.x += offset.x;
-	this->position.y += offset.y;
-	this->position.z += offset.z;
+	this->position.get()->x += offset.x;
+	this->position.get()->y += offset.y;
+	this->position.get()->z += offset.z;
 	matIsDirty = true;
 }
 
@@ -202,10 +204,10 @@ void Transform::MoveRelative(float x, float y, float z)
 	toMove = DirectX::XMVector3Rotate(toMove, rotQuat);
 
 	// Add in local space 
-	toMove = DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&position), toMove);
+	toMove = DirectX::XMVectorAdd(DirectX::XMLoadFloat3(position.get()), toMove);
 
 	// Store 
-	DirectX::XMStoreFloat3(&position, toMove);
+	DirectX::XMStoreFloat3(position.get(), toMove);
 	matIsDirty = true;
 }
 
@@ -227,10 +229,10 @@ void Transform::MoveRelative(DirectX::XMFLOAT3 vec)
 	toMove = DirectX::XMVector3Rotate(toMove, rotQuat);
 
 	// Add in local space 
-	toMove = DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&position), toMove);
+	toMove = DirectX::XMVectorAdd(DirectX::XMLoadFloat3(position.get()), toMove);
 
 	// Store 
-	DirectX::XMStoreFloat3(&position, toMove);
+	DirectX::XMStoreFloat3(position.get(), toMove);
 
 	matIsDirty = true;
 }

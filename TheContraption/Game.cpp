@@ -165,6 +165,8 @@ void Game::LoadShaders()
 		FixPath(L"PixelShader.cso").c_str());
 	customPShader = std::make_shared<SimplePixelShader>(device, context,
 		FixPath(L"CustomPS.cso").c_str());
+	litShader = std::make_shared<SimplePixelShader>(device, context,
+		FixPath(L"litPS.cso").c_str());
 }
 
 
@@ -245,18 +247,19 @@ void Game::CreateGeometry()
 	std::shared_ptr<Mesh> bow = std::make_shared<Mesh>(device, context, verticesC, indicesC, sizeof(verticesC) / sizeof(Vertex), sizeof(indicesC) / sizeof(unsigned int));
 
 
-	mat1 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), vertexShader, customPShader);
-	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 0, 1, 1), vertexShader, pixelShader);
-	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), vertexShader, pixelShader);
+	mat1 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 1.0f, vertexShader, customPShader);
+	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 0, 1, 1), 1.0f, vertexShader, pixelShader);
+	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 1.0f, vertexShader, pixelShader);
+	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 0.5f, vertexShader, litShader);
 
 	std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/sphere.obj").c_str());
 	
 	// Add all entites to the primary vector 
-	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, mat1)));
-	entities.push_back(std::shared_ptr<Entity>(new Entity(triangle, mat2)));
-	entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat3)));
-	entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat1)));
-	entities.push_back(std::shared_ptr<Entity>(new Entity(bow, mat2)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, lit)));
+	//entities.push_back(std::shared_ptr<Entity>(new Entity(triangle, mat2)));
+	//entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat3)));
+	//entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat1)));
+	//entities.push_back(std::shared_ptr<Entity>(new Entity(bow, mat2)));
 }
 
 
@@ -280,7 +283,7 @@ void Game::OnResize()
 void Game::CreateEntityGui(std::shared_ptr<Entity> entity)
 {
 	Transform* trans = entity->GetTransform();
-	XMFLOAT3 pos = trans->GetPosition();
+	XMFLOAT3 pos = *(trans->GetPosition().get());
 	XMFLOAT3 rot = trans->GetEulerRotation();
 	XMFLOAT3 sca = trans->GetScale();
 
@@ -367,11 +370,11 @@ void Game::Update(float deltaTime, float totalTime)
 	// Update the transform stuff for current assignment 
 	//entities[0]->GetTransform()->SetPosition((float)cos(totalTime) / 2.0f, 0, 0);
 	//entities[0]->GetTransform()->RotateEuler(0.0f, 0.0f, deltaTime * 2.0f);
-	entities[1]->GetTransform()->SetPosition(0.0f, 1.3f, 0.0f);
-	entities[1]->GetTransform()->SetScale((float)(cos(totalTime) + 1.1f) / 2.0f, (float)(sin(totalTime) + 1.5f) / 4.0f, 1.0f);
-	entities[2]->GetTransform()->MoveAbs(deltaTime * 0.2f, 0, 0);
-	entities[3]->GetTransform()->RotateEuler(0, 0, deltaTime * 0.5f);
-	entities[4]->GetTransform()->SetPosition((float)(sin(totalTime)), (float)(sin(totalTime)), 0);
+	//entities[1]->GetTransform()->SetPosition(0.0f, 1.3f, 0.0f);
+	//entities[1]->GetTransform()->SetScale((float)(cos(totalTime) + 1.1f) / 2.0f, (float)(sin(totalTime) + 1.5f) / 4.0f, 1.0f);
+	//entities[2]->GetTransform()->MoveAbs(deltaTime * 0.2f, 0, 0);
+	//entities[3]->GetTransform()->RotateEuler(0, 0, deltaTime * 0.5f);
+	//entities[4]->GetTransform()->SetPosition((float)(sin(totalTime)), (float)(sin(totalTime)), 0);
 
 
 	
@@ -403,11 +406,11 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
-		if (i == 0) // JUST FOR THE NOISE SPHERE
-		{
-			entities[i]->Draw(context, cameras[currentCam], totalTime);
-			continue;
-		}
+		//if (i == 0) // JUST FOR THE NOISE SPHERE
+		//{
+		//	entities[i]->Draw(context, cameras[currentCam], totalTime);
+		//	continue;
+		//}
 
 		entities[i]->Draw(context, cameras[currentCam]);
 	}

@@ -1,10 +1,10 @@
 #include "ShaderInclude.hlsli"
 
-
 cbuffer ExternalData : register(b0)
 {
 	float4 colorTint;
-	float time;
+	float3 camPos;
+	float roughness;
 }
 
 
@@ -20,9 +20,11 @@ cbuffer ExternalData : register(b0)
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	float rA = gnoise(input.uv + float2(time, 0));
-	float rB = gnoise(input.uv + float2(time / 0.5, -time));
-
-	float col = rA + rB - 0.5f;
-	return float4(col, col, col, 1.0);
+	// Just return the input color
+	// - This color (like most values passing through the rasterizer) is 
+	//   interpolated for each pixel between the corresponding vertices 
+	//   of the triangle we're rendering
+	//return float4(input.uv, 0, 1);
+	return float4(roughness.rrr, 1);
+//return float4(roughness, roughness, roughness, 1);
 }

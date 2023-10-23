@@ -22,6 +22,7 @@ public:
 	void Update(float dt);
 	void UpdateViewMatrix();
 	void UpdateProjMatrix(float fov, float aspectRatio);
+	Transform* GetTransform();
 
 	std::shared_ptr<DirectX::XMFLOAT4X4> GetViewMatrix();
 	std::shared_ptr<DirectX::XMFLOAT4X4> GetProjMatrix();
@@ -31,11 +32,10 @@ private:
 	std::shared_ptr<DirectX::XMFLOAT4X4> viewMatrix;
 	std::shared_ptr<DirectX::XMFLOAT4X4> projMatrix;
 
-	Transform* GetTransform();
 
-	float moveSpeed;
-	float mouseLookSpeed;
-	float nearClip;
-	float farClip;
+	std::shared_ptr<float> moveSpeed;
+	std::shared_ptr<float> mouseLookSpeed;
+	std::shared_ptr<float> nearClip;
+	std::shared_ptr<float> farClip;
 	Transform* transform;
 };

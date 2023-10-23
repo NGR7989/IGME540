@@ -1,13 +1,11 @@
 #pragma once
 #include <DirectXMath.h>
+#include <memory>
 
 class Transform
 {
 private:
-	/// <summary>
-	/// Represents this objects position in x, y, and z components 
-	/// </summary>
-	DirectX::XMFLOAT3 position;
+
 	/// <summary>
 	/// Represents this objects scale in x, y, and z components 
 	/// </summary>
@@ -34,7 +32,14 @@ private:
 	DirectX::XMFLOAT3 up;
 	DirectX::XMFLOAT3 forward;
 
+	/// <summary>
+	/// Represents this objects position in x, y, and z components 
+	/// </summary>
+	std::shared_ptr<DirectX::XMFLOAT3> position;
+
 public:
+
+
 	/// <summary>
 	/// Create a transform that represents a position, scale, and rotation in 3D space 
 	/// </summary>
@@ -79,7 +84,7 @@ public:
 	/// Get this transform's current x, y, and z position in 3D space
 	/// </summary>
 	/// <returns></returns>
-	DirectX::XMFLOAT3 GetPosition();
+	std::shared_ptr<DirectX::XMFLOAT3> GetPosition();
 	/// <summary>
 	/// Get this transform's current euler rotation 
 	/// </summary>

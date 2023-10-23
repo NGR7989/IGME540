@@ -9,10 +9,10 @@ Camera::Camera(
 	float nearClip,
 	float farClip)
 	:
-	moveSpeed(moveSpeed),
-	mouseLookSpeed(mouseLookSpeed),
-	nearClip(nearClip),
-	farClip(farClip)
+	moveSpeed(std::make_shared<float>(moveSpeed)),
+	mouseLookSpeed(std::make_shared<float>(mouseLookSpeed)),
+	nearClip(std::make_shared<float>(nearClip)),
+	farClip(std::make_shared<float>(farClip))
 {
 	transform = new Transform();
 	transform->SetPosition(x, y, z);
@@ -34,40 +34,40 @@ void Camera::Update(float dt)
 
 	if (input.KeyDown('W')) 
 	{
-		transform->MoveRelative(0, 0, moveSpeed * dt);
+		transform->MoveRelative(0, 0, *moveSpeed.get() * dt);
 	}
 	else if (input.KeyDown('S')) 
 	{
-		transform->MoveRelative(0, 0, -moveSpeed * dt);
+		transform->MoveRelative(0, 0, -*moveSpeed.get() * dt);
 	}
 
 	if (input.KeyDown('E'))
 	{
-		transform->MoveRelative(0, moveSpeed * dt, 0);
+		transform->MoveRelative(0, *moveSpeed.get() * dt, 0);
 	}
 	else if (input.KeyDown('Q'))
 	{
-		transform->MoveRelative(0, -moveSpeed * dt, 0);
+		transform->MoveRelative(0, -*moveSpeed.get() * dt, 0);
 	}
 
 	if (input.KeyDown('A'))
 	{
-		transform->MoveRelative(-moveSpeed * dt, 0, 0);
+		transform->MoveRelative(-*moveSpeed.get() * dt, 0, 0);
 	}
 	else if (input.KeyDown('D'))
 	{
-		transform->MoveRelative(moveSpeed * dt, 0, 0);
+		transform->MoveRelative(*moveSpeed.get() * dt, 0, 0);
 	}
 
 
 	if (input.MouseLeftDown())
 	{
-		float xDiff = mouseLookSpeed * input.GetMouseXDelta();
-		float yDiff = mouseLookSpeed * input.GetMouseYDelta();
+		float xDiff = *mouseLookSpeed.get() * input.GetMouseXDelta();
+		float yDiff = *mouseLookSpeed.get() * input.GetMouseYDelta();
 		// roate camera 
 
-		transform->RotateEuler( yDiff * mouseLookSpeed, 0, 0);
-		transform->RotateEuler(0, xDiff * mouseLookSpeed, 0);
+		transform->RotateEuler( yDiff * *mouseLookSpeed.get(), 0, 0);
+		transform->RotateEuler(0, xDiff * *mouseLookSpeed.get(), 0);
 	}
 
 	// Reset position 
@@ -82,7 +82,7 @@ void Camera::Update(float dt)
 void Camera::UpdateViewMatrix()
 {
 	// Setup
-	DirectX::XMFLOAT3 pos = transform->GetPosition();
+	DirectX::XMFLOAT3 pos = *(transform->GetPosition().get());
 	DirectX::XMFLOAT3 fwd = transform->GetForward();
 
 	// Build view and store 
@@ -98,7 +98,7 @@ void Camera::UpdateViewMatrix()
 void Camera::UpdateProjMatrix(float fov, float aspectRatio)
 {
 	// Change clip planes to be paramters of constructor 
-	DirectX::XMMATRIX proj = DirectX::XMMatrixPerspectiveFovLH(fov, aspectRatio, nearClip, farClip);
+	DirectX::XMMATRIX proj = DirectX::XMMatrixPerspectiveFovLH(fov, aspectRatio, *nearClip.get(), *farClip.get());
 	DirectX::XMStoreFloat4x4(projMatrix.get(), proj);
 }
 
@@ -114,5 +114,5 @@ std::shared_ptr<DirectX::XMFLOAT4X4> Camera::GetProjMatrix()
 
 Transform* Camera::GetTransform()
 {
-	return nullptr;
+	return transform;
 }
