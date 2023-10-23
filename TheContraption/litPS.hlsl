@@ -36,5 +36,14 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float3 diffuse = saturate(dot(input.normal, lightDir));
 
 	float3 baseColor = float3(1, 1, 1);
-	return float4((diffuse * directionalLight1.color * baseColor) + (ambient * baseColor), 1);
+	float3 diffColor = (diffuse * directionalLight1.color * baseColor) + (ambient * baseColor));
+	
+	float specExponent = (1.0f - roughness) * MAX_SPECULAR_EXPONENT;
+	float3 V = normalize(input.worldPosition - camPos);
+	float3 R = reflect(lightDir, input.normal);
+
+	float spec = pow(saturate(dot(R, V)), specExponent);
+	float3 light = diffColor * diffuse + spec;
+
+	return float4(diffColor, 1);
 }
