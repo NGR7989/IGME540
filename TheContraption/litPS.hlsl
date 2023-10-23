@@ -1,3 +1,7 @@
+
+
+#define MAX_SPECULAR_EXPONENT 256.0f
+
 #include "ShaderInclude.hlsli"
 
 cbuffer ExternalData : register(b0)
@@ -5,6 +9,8 @@ cbuffer ExternalData : register(b0)
 	float4 colorTint;
 	float3 camPos;
 	float roughness;
+	float3 ambient;
+	Light directionalLight1;
 }
 
 
@@ -24,7 +30,11 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 
 	//   of the triangle we're rendering
-	//return float4(input.uv, 0, 1);
-	return float4(roughness.rrr, 1);
-//return float4(roughness, roughness, roughness, 1);
+
+
+	float3 lightDir = normalize(input.worldPosition - directionalLight1.position);
+	float3 diffuse = saturate(dot(input.normal, lightDir));
+
+	float3 baseColor = float3(1, 1, 1);
+	return float4((diffuse * directionalLight1.color * baseColor) + (ambient * baseColor), 1);
 }

@@ -41,6 +41,7 @@ void Entity::Draw(
 	vs->SetMatrix4x4("world", transform.GetWorldMatrix()); // match variable
 	vs->SetMatrix4x4("viewMatrix", *camera->GetViewMatrix().get()); // names in your
 	vs->SetMatrix4x4("projMatrix", *camera->GetProjMatrix().get()); // shader’s cbuffer!
+	vs->SetMatrix4x4("worldInvTranspose", transform.GetWorldInverseTransposeMatrix());
 
 	vs->CopyAllBufferData();
 

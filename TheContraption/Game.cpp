@@ -76,6 +76,15 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+
+	directionalLight1 = {};
+	directionalLight1.position = DirectX::XMFLOAT3(2, 2, 0);
+	directionalLight1.type = LIGHT_TYPE_DIRECTIONAL;
+	directionalLight1.directiton = DirectX::XMFLOAT3(1, -1, 0);
+	directionalLight1.color = DirectX::XMFLOAT3(1, 0, 0);
+	directionalLight1.intensity = 1.0;
+
+
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
@@ -253,6 +262,7 @@ void Game::CreateGeometry()
 	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 0.5f, vertexShader, litShader);
 
 	std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/sphere.obj").c_str());
+	std::shared_ptr<Mesh> cylinder = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/cylinder.obj").c_str());
 	
 	// Add all entites to the primary vector 
 	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, lit)));
@@ -411,6 +421,13 @@ void Game::Draw(float deltaTime, float totalTime)
 		//	entities[i]->Draw(context, cameras[currentCam], totalTime);
 		//	continue;
 		//}
+
+		DirectX::XMFLOAT3 ambient(0.1, 0.1, 0.25);
+		entities[i]->GetMat()->GetPixelShader()->SetFloat3("ambient", ambient);
+		entities[i]->GetMat()->GetPixelShader()->SetData(
+			"directionalLight1", // The name of the (eventual) variable in the shader
+			&directionalLight1, // The address of the data to set
+			sizeof(Light)); // The size of the data (the whole struct!) to set
 
 		entities[i]->Draw(context, cameras[currentCam]);
 	}

@@ -13,6 +13,8 @@
 #include "SimpleShader.h"
 #include "Material.h"
 
+#include "Lights.h"
+
 class Game 
 	: public DXCore
 {
@@ -63,5 +65,8 @@ private:
 	std::shared_ptr<Material> mat2;
 	std::shared_ptr<Material> mat3;
 	std::shared_ptr<Material> lit;
+
+
+	Light directionalLight1;
 };
 
