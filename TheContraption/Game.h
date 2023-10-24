@@ -39,6 +39,7 @@ private:
 	// Gui
 	void UpdateImGui(float deltaTime);
 	void CreateEntityGui(std::shared_ptr<Entity> entity);
+	void CreateLightGui(Light *light);
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
@@ -67,6 +68,11 @@ private:
 	std::shared_ptr<Material> lit;
 
 
+	std::vector<Light> directionalLights;
+	std::vector<Light> spotLights;
 	Light directionalLight1;
+	Light directionalLight2;
+	Light directionalLight3;
+	Light spotLight1;
 };
 

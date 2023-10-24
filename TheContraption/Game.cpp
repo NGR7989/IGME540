@@ -76,14 +76,37 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+	directionalLights = std::vector<Light>();
 
 	directionalLight1 = {};
-	directionalLight1.position = DirectX::XMFLOAT3(2, 2, 0);
 	directionalLight1.type = LIGHT_TYPE_DIRECTIONAL;
 	directionalLight1.directiton = DirectX::XMFLOAT3(1, -1, 0);
 	directionalLight1.color = DirectX::XMFLOAT3(1, 0, 0);
 	directionalLight1.intensity = 1.0;
+	directionalLights.push_back(directionalLight1);
 
+	directionalLight2 = {};
+	directionalLight2.type = LIGHT_TYPE_DIRECTIONAL;
+	directionalLight2.directiton = DirectX::XMFLOAT3(0, -1, 0);
+	directionalLight2.color = DirectX::XMFLOAT3(0, 0, 1);
+	directionalLight2.intensity = 1.0;
+	directionalLights.push_back(directionalLight2);
+
+	directionalLight3 = {};
+	directionalLight3.type = LIGHT_TYPE_DIRECTIONAL;
+	directionalLight3.directiton = DirectX::XMFLOAT3(-0.2, 1, 0);
+	directionalLight3.color = DirectX::XMFLOAT3(0, 1, 0);
+	directionalLight3.intensity = 1.0;
+	directionalLights.push_back(directionalLight3);
+	
+
+	spotLight1 = {};
+	spotLight1.type = LIGHT_TYPE_SPOT;
+	spotLight1.position = DirectX::XMFLOAT3(5, 5, 0);
+	spotLight1.color = DirectX::XMFLOAT3(0, 1, 0);
+	spotLight1.intensity = 1.0;
+	spotLight1.range = 40.0;
+	spotLights.push_back(spotLight1);
 
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
@@ -302,6 +325,13 @@ void Game::CreateEntityGui(std::shared_ptr<Entity> entity)
 	if (ImGui::DragFloat3("Scale", &sca.x, 0.01f)) trans->SetScale(sca);
 }
 
+void Game::CreateLightGui(Light *light)
+{
+	XMFLOAT3 color = light->color;
+
+	if (ImGui::DragFloat3("Position", &color.x, 0.01f)) light->color = color;
+}
+
 void Game::UpdateImGui(float deltaTime)
 {
 	// Feed fresh input data to ImGui
@@ -339,10 +369,24 @@ void Game::UpdateImGui(float deltaTime)
 				CreateEntityGui(entities[i]);
 				ImGui::TreePop();
 			}
+		}
+
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNode("Lights"))
+	{
+		for (unsigned int i = 0; i < directionalLights.size(); i++)
+		{
+			ImGui::PushID(i);
+			if (ImGui::TreeNode("Directional"))
+			{
+				CreateLightGui(&directionalLights[i]);
+				ImGui::TreePop();
+			}
 
 			ImGui::PopID();
 		}
-
 		ImGui::TreePop();
 	}
 
@@ -424,9 +468,31 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		DirectX::XMFLOAT3 ambient(0.1, 0.1, 0.25);
 		entities[i]->GetMat()->GetPixelShader()->SetFloat3("ambient", ambient);
+
+		for (int l = 0; l < directionalLights.size(); l++)
+		{
+			entities[i]->GetMat()->GetPixelShader()->SetData(
+				"directionalLight" + std::to_string(l+1), // The name of the (eventual) variable in the shader
+				&directionalLights[l], // The address of the data to set
+				sizeof(Light)); // The size of the data (the whole struct!) to set
+		}
+
+		
+
+		//entities[i]->GetMat()->GetPixelShader()->SetData(
+		//	"directionalLight2", // The name of the (eventual) variable in the shader
+		//	&directionalLight2, // The address of the data to set
+		//	sizeof(Light)); // The size of the data (the whole struct!) to set
+
+		//entities[i]->GetMat()->GetPixelShader()->SetData(
+		//	"directionalLight3", // The name of the (eventual) variable in the shader
+		//	&directionalLight3, // The address of the data to set
+		//	sizeof(Light)); // The size of the data (the whole struct!) to set
+
+
 		entities[i]->GetMat()->GetPixelShader()->SetData(
-			"directionalLight1", // The name of the (eventual) variable in the shader
-			&directionalLight1, // The address of the data to set
+			"spotLight1", // The name of the (eventual) variable in the shader
+			&spotLight1, // The address of the data to set
 			sizeof(Light)); // The size of the data (the whole struct!) to set
 
 		entities[i]->Draw(context, cameras[currentCam]);
