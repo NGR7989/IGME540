@@ -14,6 +14,7 @@ cbuffer ExternalData : register(b0)
 	Light directionalLight2;
 	Light directionalLight3;
 	Light spotLight1;
+	Light spotLight2;
 }
 
 float Attenuate(Light light, float3 worldPos)
@@ -80,7 +81,8 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// Point lights
 	float3 light4 = SpotLight(spotLight1, input, ambient, roughness);
+	float3 light5 = SpotLight(spotLight2, input, ambient, roughness);
 
-	float3 totalLight = light1 + light2 + light3 + light4;
+	float3 totalLight = light1 + light2 + light3 + light4 + light5;
 	return float4(totalLight, 1);
 }

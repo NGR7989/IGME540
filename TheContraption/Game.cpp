@@ -100,6 +100,8 @@ void Game::Init()
 	directionalLights.push_back(directionalLight3);
 	
 
+	spotLights = std::vector<Light>();
+
 	spotLight1 = {};
 	spotLight1.type = LIGHT_TYPE_SPOT;
 	spotLight1.position = DirectX::XMFLOAT3(5, 5, 0);
@@ -107,6 +109,14 @@ void Game::Init()
 	spotLight1.intensity = 1.0;
 	spotLight1.range = 40.0;
 	spotLights.push_back(spotLight1);
+
+	spotLight2 = {};
+	spotLight2.type = LIGHT_TYPE_SPOT;
+	spotLight2.position = DirectX::XMFLOAT3(5, -5, 0);
+	spotLight2.color = DirectX::XMFLOAT3(0, 0, 1);
+	spotLight2.intensity = 1.0;
+	spotLight2.range = 100.0;
+	spotLights.push_back(spotLight2);
 
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
@@ -285,10 +295,10 @@ void Game::CreateGeometry()
 	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 0.5f, vertexShader, litShader);
 
 	std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/sphere.obj").c_str());
-	std::shared_ptr<Mesh> cylinder = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/cylinder.obj").c_str());
+	std::shared_ptr<Mesh> helix = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/helix.obj").c_str());
 	
 	// Add all entites to the primary vector 
-	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, lit)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(helix, lit)));
 	//entities.push_back(std::shared_ptr<Entity>(new Entity(triangle, mat2)));
 	//entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat3)));
 	//entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat1)));
@@ -328,8 +338,12 @@ void Game::CreateEntityGui(std::shared_ptr<Entity> entity)
 void Game::CreateLightGui(Light *light)
 {
 	XMFLOAT3 color = light->color;
+	XMFLOAT3 position = light->position;
+	XMFLOAT3 direction = light->directiton;
 
-	if (ImGui::DragFloat3("Position", &color.x, 0.01f)) light->color = color;
+	if (ImGui::DragFloat3("Color", &color.x, 0.01f)) light->color = color;
+	if (ImGui::DragFloat3("Position", &position.x, 0.01f)) light->position = position;
+	if (ImGui::DragFloat3("Direction", &direction.x, 0.01f)) light->directiton = direction;
 }
 
 void Game::UpdateImGui(float deltaTime)
@@ -369,6 +383,7 @@ void Game::UpdateImGui(float deltaTime)
 				CreateEntityGui(entities[i]);
 				ImGui::TreePop();
 			}
+			ImGui::PopID();
 		}
 
 		ImGui::TreePop();
@@ -384,7 +399,17 @@ void Game::UpdateImGui(float deltaTime)
 				CreateLightGui(&directionalLights[i]);
 				ImGui::TreePop();
 			}
+			ImGui::PopID();
+		}
 
+		for (unsigned int i = 0; i < spotLights.size(); i++)
+		{
+			ImGui::PushID(i);
+			if (ImGui::TreeNode("Point"))
+			{
+				CreateLightGui(&spotLights[i]);
+				ImGui::TreePop();
+			}
 			ImGui::PopID();
 		}
 		ImGui::TreePop();
@@ -477,23 +502,16 @@ void Game::Draw(float deltaTime, float totalTime)
 				sizeof(Light)); // The size of the data (the whole struct!) to set
 		}
 
-		
 
-		//entities[i]->GetMat()->GetPixelShader()->SetData(
-		//	"directionalLight2", // The name of the (eventual) variable in the shader
-		//	&directionalLight2, // The address of the data to set
-		//	sizeof(Light)); // The size of the data (the whole struct!) to set
-
-		//entities[i]->GetMat()->GetPixelShader()->SetData(
-		//	"directionalLight3", // The name of the (eventual) variable in the shader
-		//	&directionalLight3, // The address of the data to set
-		//	sizeof(Light)); // The size of the data (the whole struct!) to set
+		for (int l = 0; l < spotLights.size(); l++)
+		{
+			entities[i]->GetMat()->GetPixelShader()->SetData(
+				"spotLight" + std::to_string(l + 1), // The name of the (eventual) variable in the shader
+				&spotLights[l], // The address of the data to set
+				sizeof(Light)); // The size of the data (the whole struct!) to set
+		}
 
 
-		entities[i]->GetMat()->GetPixelShader()->SetData(
-			"spotLight1", // The name of the (eventual) variable in the shader
-			&spotLight1, // The address of the data to set
-			sizeof(Light)); // The size of the data (the whole struct!) to set
 
 		entities[i]->Draw(context, cameras[currentCam]);
 	}
