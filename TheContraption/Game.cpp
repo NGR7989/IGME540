@@ -185,7 +185,7 @@ void Game::LoadLights()
 
 	spotLight1 = {};
 	spotLight1.type = LIGHT_TYPE_SPOT;
-	spotLight1.position = DirectX::XMFLOAT3(5, 5, 0);
+	spotLight1.position = DirectX::XMFLOAT3(2, 2, 0);
 	spotLight1.color = DirectX::XMFLOAT3(0, 1, 0);
 	spotLight1.intensity = 1.0;
 	spotLight1.range = 40.0;
@@ -193,7 +193,7 @@ void Game::LoadLights()
 
 	spotLight2 = {};
 	spotLight2.type = LIGHT_TYPE_SPOT;
-	spotLight2.position = DirectX::XMFLOAT3(5, -5, 0);
+	spotLight2.position = DirectX::XMFLOAT3(1, -3, 0);
 	spotLight2.color = DirectX::XMFLOAT3(0, 0, 1);
 	spotLight2.intensity = 1.0;
 	spotLight2.range = 100.0;
@@ -321,9 +321,9 @@ void Game::CreateGeometry()
 	device.Get()->CreateSamplerState(&sampDesc, rustyMetalSamplerState.GetAddressOf());
 
 	mat1 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 1.0f, DirectX::XMFLOAT2(0,0), vertexShader, customPShader);
-	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 0, 1, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
+	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
 	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
-	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
+	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
 
 	lit.get()->AddSampler("BasicSampler", rustyMetalSamplerState);
 	lit.get()->AddTextureSRV("SurfaceTexture", rustyMetal);
@@ -334,7 +334,20 @@ void Game::CreateGeometry()
 	
 	// Add all entites to the primary vector 
 	entities.push_back(std::shared_ptr<Entity>(new Entity(helix, lit)));
-	//entities.push_back(std::shared_ptr<Entity>(new Entity(triangle, mat2)));
+	entities[0]->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
+
+	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, lit)));
+	entities[1]->GetTransform()->SetPosition(-1.0f, 0.0f, 0.0f);
+
+	// Create gizmos to represent lights in 3D space 
+	int lightCount = directionalLights.size() + spotLights.size();
+	for (unsigned int i = 0; i < spotLights.size(); i++)
+	{
+		lightGizmos.push_back(std::shared_ptr<Entity>(new Entity(sphere, mat2)));
+		lightGizmos[i]->GetTransform()->SetPosition(spotLights[i].position);
+		//lightGizmos[i]->GetTransform()->SetScale(0.1f);
+	}
+
 	//entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat3)));
 	//entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat1)));
 	//entities.push_back(std::shared_ptr<Entity>(new Entity(bow, mat2)));
@@ -381,7 +394,11 @@ void Game::CreateLightGui(Light *light)
 	XMFLOAT3 direction = light->directiton;
 
 	if (ImGui::DragFloat3("Color", &color.x, 0.01f)) light->color = color;
-	if (ImGui::DragFloat3("Position", &position.x, 0.01f)) light->position = position;
+	if (ImGui::DragFloat3("Position", &position.x, 0.01f))
+	{
+		light->position = position;
+		lightToGizmos[light]->SetPosition(position);
+	}
 	if (ImGui::DragFloat3("Direction", &direction.x, 0.01f)) light->directiton = direction;
 }
 
@@ -553,6 +570,11 @@ void Game::Draw(float deltaTime, float totalTime)
 
 
 		entities[i]->Draw(context, cameras[currentCam]);
+	}
+
+	for (unsigned int i = 0; i < lightGizmos.size(); i++)
+	{
+		lightGizmos[i]->Draw(context, cameras[currentCam]);
 	}
 
 	// Frame END

@@ -90,6 +90,12 @@ float3 SpotLight(Light light, VertexToPixel input, float3 ambient, float roughne
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
+	//float3 lightDir = normalize(spotLight1.position - input.worldPosition);
+	//float3 diffuse = saturate(dot(input.normal, lightDir));
+	//return float4(diffuse, 1.0f);
+	//float3 diffColor = (diffuse * light.color * GetSurfaceColor(input)) + (ambient * GetSurfaceColor(input));
+	//return diffColor;
+
 	// Dir lights 
 	float3 light1 = DirLight(directionalLight1, input, ambient, roughness);
 	float3 light2 = DirLight(directionalLight2, input, ambient, roughness);
@@ -98,6 +104,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Point lights
 	float3 light4 = SpotLight(spotLight1, input, ambient, roughness);
 	float3 light5 = SpotLight(spotLight2, input, ambient, roughness);
+	return float4(light4 + light5, 1);
 
 	float3 totalLight = light1 + light2 + light3 + light4 + light5;
 	return float4(totalLight, 1);

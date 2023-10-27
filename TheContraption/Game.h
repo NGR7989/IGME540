@@ -74,6 +74,9 @@ private:
 	std::shared_ptr<Material> lit;
 
 
+	std::vector<std::shared_ptr<Entity>> lightGizmos;
+	std::unordered_map<Light*, Transform*> lightToGizmos;
+
 	std::vector<Light> directionalLights;
 	std::vector<Light> spotLights;
 	Light directionalLight1;

@@ -37,7 +37,7 @@ void Entity::Draw(
 
 
 	std::shared_ptr<SimpleVertexShader> vs = mat->GetVertexShader();
-	//vs->SetFloat4("colorTint", mat->GetTint()); // Strings here MUST
+	vs->SetFloat4("colorTint", mat->GetTint()); // Strings here MUST
 	vs->SetMatrix4x4("world", transform.GetWorldMatrix()); // match variable
 	vs->SetMatrix4x4("viewMatrix", *camera->GetViewMatrix().get()); // names in your
 	vs->SetMatrix4x4("projMatrix", *camera->GetProjMatrix().get()); // shader’s cbuffer!
