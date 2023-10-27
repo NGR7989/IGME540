@@ -331,6 +331,7 @@ void Game::CreateGeometry()
 
 	std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/sphere.obj").c_str());
 	std::shared_ptr<Mesh> helix = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/helix.obj").c_str());
+	std::shared_ptr<Mesh> lightGUIModel = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/LightGUIModel.obj").c_str());
 	
 	// Add all entites to the primary vector 
 	entities.push_back(std::shared_ptr<Entity>(new Entity(helix, lit)));
@@ -340,12 +341,18 @@ void Game::CreateGeometry()
 	entities[1]->GetTransform()->SetPosition(-1.0f, 0.0f, 0.0f);
 
 	// Create gizmos to represent lights in 3D space 
-	int lightCount = directionalLights.size() + spotLights.size();
-	for (unsigned int i = 0; i < spotLights.size(); i++)
+	int sCount = spotLights.size();
+	int dCount = directionalLights.size(); 
+	for (unsigned int i = 0; i < dCount + sCount; i++)
 	{
-		lightGizmos.push_back(std::shared_ptr<Entity>(new Entity(sphere, mat2)));
-		lightGizmos[i]->GetTransform()->SetPosition(spotLights[i].position);
-		//lightGizmos[i]->GetTransform()->SetScale(0.1f);
+		Light *light = i < sCount ? &spotLights[i] : &directionalLights[i - sCount];
+		DirectX::XMFLOAT4 startColor = DirectX::XMFLOAT4(light->color.x, light->color.y, light->color.z, 1);
+		std::shared_ptr<Material> mat = std::make_shared<Material>(startColor, 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
+
+
+		lightGizmos.push_back(std::shared_ptr<Entity>(new Entity(lightGUIModel, mat)));
+		lightGizmos[i]->GetTransform()->SetPosition(light->position);
+		lightToGizmos[light] = lightGizmos[i].get();
 	}
 
 	//entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat3)));
@@ -393,11 +400,15 @@ void Game::CreateLightGui(Light *light)
 	XMFLOAT3 position = light->position;
 	XMFLOAT3 direction = light->directiton;
 
-	if (ImGui::DragFloat3("Color", &color.x, 0.01f)) light->color = color;
+	if (ImGui::DragFloat3("Color", &color.x, 0.01f))
+	{
+		light->color = color;
+		lightToGizmos[light]->GetMat()->SetTint(DirectX::XMFLOAT4(color.x, color.y, color.z, 1.0));
+	}
 	if (ImGui::DragFloat3("Position", &position.x, 0.01f))
 	{
 		light->position = position;
-		lightToGizmos[light]->SetPosition(position);
+		lightToGizmos[light]->GetTransform()->SetPosition(position);
 	}
 	if (ImGui::DragFloat3("Direction", &direction.x, 0.01f)) light->directiton = direction;
 }

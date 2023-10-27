@@ -75,7 +75,7 @@ private:
 
 
 	std::vector<std::shared_ptr<Entity>> lightGizmos;
-	std::unordered_map<Light*, Transform*> lightToGizmos;
+	std::unordered_map<Light*, Entity*> lightToGizmos;
 
 	std::vector<Light> directionalLights;
 	std::vector<Light> spotLights;
