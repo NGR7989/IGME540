@@ -13,6 +13,7 @@ cbuffer ExternalData : register(b0)
 	float4 colorTint;
 	float3 camPos;
 	float roughness;
+	float2 uvOffset;
 	float3 ambient;
 	Light directionalLight1;
 	Light directionalLight2;
@@ -21,15 +22,20 @@ cbuffer ExternalData : register(b0)
 	Light spotLight2;
 }
 
+float2 GetUV(VertexToPixel input)
+{
+	return input.uv + uvOffset;
+}
+
 float3 GetSurfaceColor(VertexToPixel input)
 {
-	float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, input.uv).rgb;
+	float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, GetUV(input)).rgb;
 	return surfaceColor;
 }
 
 float GetSpec(VertexToPixel input)
 {
-	return SpeculuarTexture.Sample(BasicSampler, input.uv).r;
+	return SpeculuarTexture.Sample(BasicSampler, GetUV(input)).r;
 }
 
 float Attenuate(Light light, float3 worldPos)

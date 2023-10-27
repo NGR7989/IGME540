@@ -1,7 +1,7 @@
 #include "Material.h"
 
-Material::Material(DirectX::XMFLOAT4 tint, float roughness, std::shared_ptr<SimpleVertexShader> vertex, std::shared_ptr<SimplePixelShader> pixel) :
-	tint(tint), camPos(camPos), roughness(roughness), vertex(vertex), pixel(pixel) {}
+Material::Material(DirectX::XMFLOAT4 tint, float roughness, DirectX::XMFLOAT2 uvOffset, std::shared_ptr<SimpleVertexShader> vertex, std::shared_ptr<SimplePixelShader> pixel) :
+	tint(tint), camPos(camPos), roughness(roughness), uvOffset(uvOffset), vertex(vertex), pixel(pixel) {}
 
 DirectX::XMFLOAT4 Material::GetTint()
 {
@@ -23,6 +23,11 @@ std::shared_ptr<SimplePixelShader> Material::GetPixelShader()
 	return pixel;
 }
 
+DirectX::XMFLOAT2 Material::GetUVOffset()
+{
+	return uvOffset;
+}
+
 
 
 void Material::SetTint(DirectX::XMFLOAT4 nextTint)
@@ -33,6 +38,11 @@ void Material::SetTint(DirectX::XMFLOAT4 nextTint)
 void Material::SetRoughness(float nextRoughness)
 {
 	roughness = nextRoughness;
+}
+
+void Material::SetUVOffset(DirectX::XMFLOAT2 nextOffset)
+{
+	uvOffset = nextOffset;
 }
 
 void Material::SetVertexShader(std::shared_ptr<SimpleVertexShader> nextVertex)

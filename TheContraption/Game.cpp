@@ -320,10 +320,10 @@ void Game::CreateGeometry()
 	// Creates the sampler 
 	device.Get()->CreateSamplerState(&sampDesc, rustyMetalSamplerState.GetAddressOf());
 
-	mat1 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 1.0f, vertexShader, customPShader);
-	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 0, 1, 1), 1.0f, vertexShader, pixelShader);
-	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 1.0f, vertexShader, pixelShader);
-	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 0.5f, vertexShader, litShader);
+	mat1 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 1.0f, DirectX::XMFLOAT2(0,0), vertexShader, customPShader);
+	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 0, 1, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
+	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
+	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
 
 	lit.get()->AddSampler("BasicSampler", rustyMetalSamplerState);
 	lit.get()->AddTextureSRV("SurfaceTexture", rustyMetal);
@@ -365,9 +365,13 @@ void Game::CreateEntityGui(std::shared_ptr<Entity> entity)
 	XMFLOAT3 rot = trans->GetEulerRotation();
 	XMFLOAT3 sca = trans->GetScale();
 
+	XMFLOAT2 uvOff = entity.get()->GetMat()->GetUVOffset();
+
 	if (ImGui::DragFloat3("Position", &pos.x, 0.01f)) trans->SetPosition(pos);
 	if (ImGui::DragFloat3("Rotation (Radians)", &rot.x, 0.01f)) trans->SetEulerRotation(rot);
 	if (ImGui::DragFloat3("Scale", &sca.x, 0.01f)) trans->SetScale(sca);
+
+	if (ImGui::DragFloat2("UV Offset", &uvOff.x, 0.01f)) entity->GetMat()->SetUVOffset(uvOff);
 }
 
 void Game::CreateLightGui(Light *light)

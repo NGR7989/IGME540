@@ -52,6 +52,7 @@ void Entity::Draw(
 	//DirectX::XMFLOAT3 pos = trans->GetPosition();
 	ps->SetFloat3("camPos", *(camera->GetTransform()->GetPosition().get()));
 	ps->SetFloat("roughness", mat->GetRoughness());
+	ps->SetFloat2("uvOffset", mat->GetUVOffset());
 
 	ps->CopyAllBufferData();
 
