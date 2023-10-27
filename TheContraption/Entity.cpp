@@ -55,6 +55,8 @@ void Entity::Draw(
 
 	ps->CopyAllBufferData();
 
+	mat->PrepareMaterial();
+
 	model->Draw();
 }
 

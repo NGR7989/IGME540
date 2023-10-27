@@ -34,7 +34,7 @@ void Camera::Update(float dt)
 
 	if (input.KeyDown('W')) 
 	{
-		transform->MoveRelative(0, 0, *moveSpeed.get() * dt);
+		transform->MoveRelative(0, 0, *moveSpeed.get() * dt); 
 	}
 	else if (input.KeyDown('S')) 
 	{

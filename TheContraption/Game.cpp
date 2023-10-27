@@ -76,51 +76,9 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
-	directionalLights = std::vector<Light>();
-
-	directionalLight1 = {};
-	directionalLight1.type = LIGHT_TYPE_DIRECTIONAL;
-	directionalLight1.directiton = DirectX::XMFLOAT3(1, -1, 0);
-	directionalLight1.color = DirectX::XMFLOAT3(1, 0, 0);
-	directionalLight1.intensity = 1.0;
-	directionalLights.push_back(directionalLight1);
-
-	directionalLight2 = {};
-	directionalLight2.type = LIGHT_TYPE_DIRECTIONAL;
-	directionalLight2.directiton = DirectX::XMFLOAT3(0, -1, 0);
-	directionalLight2.color = DirectX::XMFLOAT3(0, 0, 1);
-	directionalLight2.intensity = 1.0;
-	directionalLights.push_back(directionalLight2);
-
-	directionalLight3 = {};
-	directionalLight3.type = LIGHT_TYPE_DIRECTIONAL;
-	directionalLight3.directiton = DirectX::XMFLOAT3(-0.2, 1, 0);
-	directionalLight3.color = DirectX::XMFLOAT3(0, 1, 0);
-	directionalLight3.intensity = 1.0;
-	directionalLights.push_back(directionalLight3);
 	
 
-	spotLights = std::vector<Light>();
-
-	spotLight1 = {};
-	spotLight1.type = LIGHT_TYPE_SPOT;
-	spotLight1.position = DirectX::XMFLOAT3(5, 5, 0);
-	spotLight1.color = DirectX::XMFLOAT3(0, 1, 0);
-	spotLight1.intensity = 1.0;
-	spotLight1.range = 40.0;
-	spotLights.push_back(spotLight1);
-
-	spotLight2 = {};
-	spotLight2.type = LIGHT_TYPE_SPOT;
-	spotLight2.position = DirectX::XMFLOAT3(5, -5, 0);
-	spotLight2.color = DirectX::XMFLOAT3(0, 0, 1);
-	spotLight2.intensity = 1.0;
-	spotLight2.range = 100.0;
-	spotLights.push_back(spotLight2);
-
-	// Helper methods for loading shaders, creating some basic
-	// geometry to draw and some simple camera matrices.
-	//  - You'll be expanding and/or replacing these later
+	LoadLights();
 	LoadShaders();
 	CreateGeometry();
 
@@ -189,6 +147,57 @@ void Game::Init()
 		XM_PIDIV2,								// FOV 
 		this->windowWidth / this->windowHeight	// Aspect ratio 
 		));
+
+
+	OnResize();
+}
+
+/// <summary>
+/// Create the different lights for the scene 
+/// </summary>
+void Game::LoadLights()
+{
+	directionalLights = std::vector<Light>();
+
+	directionalLight1 = {};
+	directionalLight1.type = LIGHT_TYPE_DIRECTIONAL;
+	directionalLight1.directiton = DirectX::XMFLOAT3(1, -1, 0);
+	directionalLight1.color = DirectX::XMFLOAT3(0.2f, 0.2f, 0.2f);
+	directionalLight1.intensity = 1.0;
+	directionalLights.push_back(directionalLight1);
+
+	directionalLight2 = {};
+	directionalLight2.type = LIGHT_TYPE_DIRECTIONAL;
+	directionalLight2.directiton = DirectX::XMFLOAT3(0, -1, 0);
+	directionalLight2.color = DirectX::XMFLOAT3(1, 1, 1);
+	directionalLight2.intensity = 1.0;
+	directionalLights.push_back(directionalLight2);
+
+	directionalLight3 = {};
+	directionalLight3.type = LIGHT_TYPE_DIRECTIONAL;
+	directionalLight3.directiton = DirectX::XMFLOAT3(-0.2f, 1, 0);
+	directionalLight3.color = DirectX::XMFLOAT3(0, 1, 0);
+	directionalLight3.intensity = 1.0;
+	directionalLights.push_back(directionalLight3);
+
+
+	spotLights = std::vector<Light>();
+
+	spotLight1 = {};
+	spotLight1.type = LIGHT_TYPE_SPOT;
+	spotLight1.position = DirectX::XMFLOAT3(5, 5, 0);
+	spotLight1.color = DirectX::XMFLOAT3(0, 1, 0);
+	spotLight1.intensity = 1.0;
+	spotLight1.range = 40.0;
+	spotLights.push_back(spotLight1);
+
+	spotLight2 = {};
+	spotLight2.type = LIGHT_TYPE_SPOT;
+	spotLight2.position = DirectX::XMFLOAT3(5, -5, 0);
+	spotLight2.color = DirectX::XMFLOAT3(0, 0, 1);
+	spotLight2.intensity = 1.0;
+	spotLight2.range = 100.0;
+	spotLights.push_back(spotLight2);
 }
 
 // --------------------------------------------------------
@@ -201,6 +210,10 @@ void Game::Init()
 // --------------------------------------------------------
 void Game::LoadShaders()
 {
+	CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(L"../../Assets/Textures/rustymetal.png").c_str(), nullptr, rustyMetal.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(L"../../Assets/Textures/rustymetal_specular.png").c_str(), nullptr, rustyMetalSpec.GetAddressOf());
+
+
 	vertexShader = std::make_shared<SimpleVertexShader>(device, context,
 		FixPath(L"VertexShader.cso").c_str());
 	pixelShader = std::make_shared<SimplePixelShader>(device, context,
@@ -210,7 +223,6 @@ void Game::LoadShaders()
 	litShader = std::make_shared<SimplePixelShader>(device, context,
 		FixPath(L"litPS.cso").c_str());
 }
-
 
 
 // --------------------------------------------------------
@@ -282,17 +294,40 @@ void Game::CreateGeometry()
 		{ XMFLOAT3(+1.0f, +0.1f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
 	};
 
-	std::vector<unsigned int> hexVector = std::vector<unsigned int>();
 
 	unsigned int indicesC[] = { 2, 0, 1,  2, 4, 0,  4, 5, 0,  1, 5, 6,  5, 7, 6};
 
 	std::shared_ptr<Mesh> bow = std::make_shared<Mesh>(device, context, verticesC, indicesC, sizeof(verticesC) / sizeof(Vertex), sizeof(indicesC) / sizeof(unsigned int));
 
 
+
+	D3D11_SAMPLER_DESC sampDesc = {};
+
+	// How to handles uvs going outside of range 
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+
+	// Other options: 
+	// D3D11_FILTER_MIN_MAG_MIP_LINEAR 
+	// D3D11_FILTER_MIN_MAG_MIP_POINT 
+	sampDesc.Filter = D3D11_FILTER_ANISOTROPIC; 
+	sampDesc.MaxAnisotropy = 16;
+
+	// Range of mip maping where 0 is it turned off 
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	// Creates the sampler 
+	device.Get()->CreateSamplerState(&sampDesc, rustyMetalSamplerState.GetAddressOf());
+
 	mat1 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 1.0f, vertexShader, customPShader);
 	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 0, 1, 1), 1.0f, vertexShader, pixelShader);
 	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 1.0f, vertexShader, pixelShader);
 	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 0.5f, vertexShader, litShader);
+
+	lit.get()->AddSampler("BasicSampler", rustyMetalSamplerState);
+	lit.get()->AddTextureSRV("SurfaceTexture", rustyMetal);
+	lit.get()->AddTextureSRV("SpeculuarTexture", rustyMetalSpec);
 
 	std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/sphere.obj").c_str());
 	std::shared_ptr<Mesh> helix = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/helix.obj").c_str());
@@ -444,7 +479,7 @@ void Game::UpdateImGui(float deltaTime)
 void Game::Update(float deltaTime, float totalTime)
 {
 	UpdateImGui(deltaTime);
-	float mouseLookSpeed = 2.0f;
+	float mouseLookSpeed = 2.0f; 
 
 	// Update the transform stuff for current assignment 
 	//entities[0]->GetTransform()->SetPosition((float)cos(totalTime) / 2.0f, 0, 0);
@@ -491,10 +526,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		//	continue;
 		//}
 
-		DirectX::XMFLOAT3 ambient(0.1, 0.1, 0.25);
+		DirectX::XMFLOAT3 ambient(0.1f, 0.1f, 0.25f);
 		entities[i]->GetMat()->GetPixelShader()->SetFloat3("ambient", ambient);
 
-		for (int l = 0; l < directionalLights.size(); l++)
+		for (int l = 0; l < directionalLights.size(); l++) 
 		{
 			entities[i]->GetMat()->GetPixelShader()->SetData(
 				"directionalLight" + std::to_string(l+1), // The name of the (eventual) variable in the shader

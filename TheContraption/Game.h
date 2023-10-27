@@ -12,6 +12,7 @@
 
 #include "SimpleShader.h"
 #include "Material.h"
+#include "WICTextureLoader.h"
 
 #include "Lights.h"
 
@@ -31,8 +32,7 @@ public:
 	void Draw(float deltaTime, float totalTime);
 
 private:
-
-	// Initialization helper methods - feel free to customize, combine, remove, etc.
+	void LoadLights();
 	void LoadShaders(); 
 	void CreateGeometry();
 
@@ -50,11 +50,17 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 	
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rustyMetal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rustyMetalSpec;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> rustyMetalSamplerState;
+
+
 	// Shaders and shader-related constructs
 	std::shared_ptr<SimplePixelShader> pixelShader;
 	std::shared_ptr<SimplePixelShader> litShader;
 	std::shared_ptr<SimplePixelShader> customPShader;
 	std::shared_ptr<SimpleVertexShader> vertexShader;
+
 
 	std::vector<std::shared_ptr<Entity>> entities;
 

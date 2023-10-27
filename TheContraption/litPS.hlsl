@@ -4,6 +4,10 @@
 
 #include "ShaderInclude.hlsli"
 
+Texture2D SurfaceTexture : register(t0); // "t" registers for textures
+Texture2D SpeculuarTexture : register(t1); // "t" registers for textures
+SamplerState BasicSampler : register(s0); // "s" registers for samplers
+
 cbuffer ExternalData : register(b0)
 {
 	float4 colorTint;
@@ -15,6 +19,17 @@ cbuffer ExternalData : register(b0)
 	Light directionalLight3;
 	Light spotLight1;
 	Light spotLight2;
+}
+
+float3 GetSurfaceColor(VertexToPixel input)
+{
+	float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, input.uv).rgb;
+	return surfaceColor;
+}
+
+float GetSpec(VertexToPixel input)
+{
+	return SpeculuarTexture.Sample(BasicSampler, input.uv).r;
 }
 
 float Attenuate(Light light, float3 worldPos)
@@ -29,14 +44,13 @@ float3 DirLight(Light light, VertexToPixel input, float3 ambient, float roughnes
 	float3 lightDir = normalize(-light.directiton);
 	float3 diffuse = saturate(dot(input.normal, lightDir));
 
-	float3 baseColor = float3(1, 1, 1);
-	float3 diffColor = (diffuse * light.color * baseColor) + (ambient * baseColor);
+	float3 diffColor = (diffuse * light.color * GetSurfaceColor(input)) + (ambient * GetSurfaceColor(input));
 
 	float specExponent = (1.0f - roughness) * MAX_SPECULAR_EXPONENT;
 	float3 V = normalize(input.worldPosition - camPos);
 	float3 R = reflect(lightDir, input.normal);
 
-	float spec = pow(saturate(dot(R, V)), specExponent);
+	float spec = pow(saturate(dot(R, V)), specExponent) * GetSpec(input);
 
 	return (diffColor * diffuse + spec);
 }
@@ -46,17 +60,18 @@ float3 SpotLight(Light light, VertexToPixel input, float3 ambient, float roughne
 	float3 lightDir = normalize(light.position-input.worldPosition );
 	float3 diffuse = saturate(dot(input.normal, lightDir));
 
-	float3 baseColor = float3(1, 1, 1);
-	float3 diffColor = (diffuse * light.color * baseColor) + (ambient * baseColor);
+	float3 diffColor = (diffuse * light.color * GetSurfaceColor(input)) + (ambient * GetSurfaceColor(input));
 
 	float specExponent = (1.0f - roughness) * MAX_SPECULAR_EXPONENT;
 	float3 V = normalize(input.worldPosition - camPos);
 	float3 R = reflect(lightDir, input.normal);
 
-	float spec = pow(saturate(dot(R, V)), specExponent);
+	float spec = pow(saturate(dot(R, V)), specExponent) * GetSpec(input);
 
 	return (diffColor * diffuse + spec) * Attenuate(light, input.worldPosition);
 }
+
+
 
 // --------------------------------------------------------
 // The entry point (main method) for our pixel shader
@@ -69,11 +84,6 @@ float3 SpotLight(Light light, VertexToPixel input, float3 ambient, float roughne
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	// Just return the input color
-	// - This color (like most values passing through the rasterizer) is 
-	//   interpolated for each pixel between the corresponding vertices 
-	//   of the triangle we're rendering
-
 	// Dir lights 
 	float3 light1 = DirLight(directionalLight1, input, ambient, roughness);
 	float3 light2 = DirLight(directionalLight2, input, ambient, roughness);
