@@ -119,6 +119,7 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>(
 		0.0f, 0.0f, -5.0f,						// Pos
 		1.0f,									// Move speed
+		10.0f,									// Sprint speed (hold left shift)
 		0.1f,									// Mouse look speed 
 		XM_PIDIV4,								// FOV 
 		this->windowWidth / this->windowHeight	// Aspect ratio 
@@ -127,6 +128,7 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>(
 		0.0f, 0.0f, -20.0f,						// Pos
 		3.0f,									// Move speed
+		2.0f,									// Sprint speed (hold left shift)
 		0.1f,									// Mouse look speed 
 		XM_PIDIV4,								// FOV 
 		this->windowWidth / this->windowHeight	// Aspect ratio 
@@ -135,6 +137,7 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>(
 		2.0f, 1.5f, -15.0f,						// Pos
 		1.0f,									// Move speed
+		2.0f,									// Sprint speed (hold left shift)
 		0.1f,									// Mouse look speed 
 		XM_PI / 8,								// FOV 
 		this->windowWidth / this->windowHeight	// Aspect ratio 
@@ -143,6 +146,7 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>(
 		-1.0f, 1.0f, -5.0f,						// Pos
 		1.0f,									// Move speed
+		2.0f,									// Sprint speed (hold left shift)
 		0.1f,									// Mouse look speed 
 		XM_PIDIV2,								// FOV 
 		this->windowWidth / this->windowHeight	// Aspect ratio 

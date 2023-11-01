@@ -3,6 +3,7 @@
 Camera::Camera(
 	float x, float y, float z, 
 	float moveSpeed, 
+	float sprintMoveSpeed, 
 	float mouseLookSpeed, 
 	float fov, 
 	float aspectRatio,
@@ -10,6 +11,7 @@ Camera::Camera(
 	float farClip)
 	:
 	moveSpeed(std::make_shared<float>(moveSpeed)),
+	sprintMoveSpeed(std::make_shared<float>(sprintMoveSpeed)),
 	mouseLookSpeed(std::make_shared<float>(mouseLookSpeed)),
 	nearClip(std::make_shared<float>(nearClip)),
 	farClip(std::make_shared<float>(farClip))
@@ -32,31 +34,33 @@ void Camera::Update(float dt)
 {
 	Input& input = Input::GetInstance();
 
+	float speed = input.KeyDown(16) ? *sprintMoveSpeed.get() : *moveSpeed.get();
+
 	if (input.KeyDown('W')) 
 	{
-		transform->MoveRelative(0, 0, *moveSpeed.get() * dt); 
+		transform->MoveRelative(0, 0, speed * dt);
 	}
 	else if (input.KeyDown('S')) 
 	{
-		transform->MoveRelative(0, 0, -*moveSpeed.get() * dt);
+		transform->MoveRelative(0, 0, -speed * dt);
 	}
 
 	if (input.KeyDown('E'))
 	{
-		transform->MoveRelative(0, *moveSpeed.get() * dt, 0);
+		transform->MoveRelative(0, speed * dt, 0);
 	}
 	else if (input.KeyDown('Q'))
 	{
-		transform->MoveRelative(0, -*moveSpeed.get() * dt, 0);
+		transform->MoveRelative(0, -speed * dt, 0);
 	}
 
 	if (input.KeyDown('A'))
 	{
-		transform->MoveRelative(-*moveSpeed.get() * dt, 0, 0);
+		transform->MoveRelative(-speed * dt, 0, 0);
 	}
 	else if (input.KeyDown('D'))
 	{
-		transform->MoveRelative(*moveSpeed.get() * dt, 0, 0);
+		transform->MoveRelative(speed * dt, 0, 0);
 	}
 
 

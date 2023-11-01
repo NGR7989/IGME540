@@ -9,6 +9,7 @@ public:
 	Camera(
 		float x, float y, float z, 
 		float moveSpeed, 
+		float sprintMoveSpeed, 
 		float mouseLookSpeed, 
 		float fov, 
 		float aspectRatio,
@@ -34,6 +35,7 @@ private:
 
 
 	std::shared_ptr<float> moveSpeed;
+	std::shared_ptr<float> sprintMoveSpeed;
 	std::shared_ptr<float> mouseLookSpeed;
 	std::shared_ptr<float> nearClip;
 	std::shared_ptr<float> farClip;
