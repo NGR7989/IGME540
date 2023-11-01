@@ -35,16 +35,26 @@ private:
 	void LoadLights();
 	void LoadShaders(); 
 	void CreateGeometry();
+	void CreateCameras();
 
 	// Gui
 	void UpdateImGui(float deltaTime);
 	void CreateEntityGui(std::shared_ptr<Entity> entity);
-	void CreateLightGui(Light *light);
 
-	// Note the usage of ComPtr below
-	//  - This is a smart pointer for objects that abide by the
-	//     Component Object Model, which DirectX objects do
-	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
+	/// <summary>
+	/// Call this function to automatically create a light
+	/// based on the lights type index
+	/// </summary>
+	/// <param name="light"></param>
+	void CreateLightGui(Light* light);
+	void CreateDirLightGui(Light *light);
+	void CreatePointLightGui(Light *light);
+
+	/// <summary>
+	/// INteract with adjustable settings for given camera
+	/// </summary>
+	/// <param name="cam"></param>
+	void CreateCamGui(Camera* cam);
 
 	// Buffers to hold actual geometry data
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
@@ -61,22 +71,26 @@ private:
 	std::shared_ptr<SimplePixelShader> customPShader;
 	std::shared_ptr<SimpleVertexShader> vertexShader;
 
-
+	/// <summary>
+	/// Holds all entities active in scene 
+	/// </summary>
 	std::vector<std::shared_ptr<Entity>> entities;
 
+	// Camera 
 	int currentCam;
 	std::vector<std::shared_ptr<Camera>> cameras; 
 
-
+	// Materials 
 	std::shared_ptr<Material> mat1;
 	std::shared_ptr<Material> mat2;
 	std::shared_ptr<Material> mat3;
 	std::shared_ptr<Material> lit;
 
-
+	// Light gizmo itmes 
 	std::vector<std::shared_ptr<Entity>> lightGizmos;
 	std::unordered_map<Light*, Entity*> lightToGizmos;
 
+	// Lights 
 	std::vector<Light> directionalLights;
 	std::vector<Light> spotLights;
 	Light directionalLight1;

@@ -76,13 +76,10 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
-	
-
 	LoadLights();
 	LoadShaders();
 	CreateGeometry();
-
-	
+	CreateCameras();
 
 	
 	// Set initial graphics API state
@@ -99,9 +96,7 @@ void Game::Init()
 		// the vertex buffer. For this course, all of your vertices will probably
 		// have the same layout, so we can just set this once at startup.
 		//context->IASetInputLayout(inputLayout.Get());
-
 	}
-
 
 	// Initialize ImGui
 	IMGUI_CHECKVERSION();
@@ -113,44 +108,6 @@ void Game::Init()
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX11_Init(device.Get(), context.Get());
-
-
-	// Create the cameras 
-	cameras.push_back(std::make_shared<Camera>(
-		0.0f, 0.0f, -5.0f,						// Pos
-		1.0f,									// Move speed
-		10.0f,									// Sprint speed (hold left shift)
-		0.1f,									// Mouse look speed 
-		XM_PIDIV4,								// FOV 
-		this->windowWidth / this->windowHeight	// Aspect ratio 
-		));
-
-	cameras.push_back(std::make_shared<Camera>(
-		0.0f, 0.0f, -20.0f,						// Pos
-		3.0f,									// Move speed
-		2.0f,									// Sprint speed (hold left shift)
-		0.1f,									// Mouse look speed 
-		XM_PIDIV4,								// FOV 
-		this->windowWidth / this->windowHeight	// Aspect ratio 
-		));
-
-	cameras.push_back(std::make_shared<Camera>(
-		2.0f, 1.5f, -15.0f,						// Pos
-		1.0f,									// Move speed
-		2.0f,									// Sprint speed (hold left shift)
-		0.1f,									// Mouse look speed 
-		XM_PI / 8,								// FOV 
-		this->windowWidth / this->windowHeight	// Aspect ratio 
-		));
-
-	cameras.push_back(std::make_shared<Camera>(
-		-1.0f, 1.0f, -5.0f,						// Pos
-		1.0f,									// Move speed
-		2.0f,									// Sprint speed (hold left shift)
-		0.1f,									// Mouse look speed 
-		XM_PIDIV2,								// FOV 
-		this->windowWidth / this->windowHeight	// Aspect ratio 
-		));
 
 
 	OnResize();
@@ -184,11 +141,10 @@ void Game::LoadLights()
 	directionalLight3.intensity = 1.0;
 	directionalLights.push_back(directionalLight3);
 
-
 	spotLights = std::vector<Light>();
 
 	spotLight1 = {};
-	spotLight1.type = LIGHT_TYPE_SPOT;
+	spotLight1.type = LIGHT_TYPE_POINT;
 	spotLight1.position = DirectX::XMFLOAT3(2, 2, 0);
 	spotLight1.color = DirectX::XMFLOAT3(0, 1, 0);
 	spotLight1.intensity = 1.0;
@@ -196,7 +152,7 @@ void Game::LoadLights()
 	spotLights.push_back(spotLight1);
 
 	spotLight2 = {};
-	spotLight2.type = LIGHT_TYPE_SPOT;
+	spotLight2.type = LIGHT_TYPE_POINT;
 	spotLight2.position = DirectX::XMFLOAT3(1, -3, 0);
 	spotLight2.color = DirectX::XMFLOAT3(0, 0, 1);
 	spotLight2.intensity = 1.0;
@@ -345,9 +301,9 @@ void Game::CreateGeometry()
 	entities[1]->GetTransform()->SetPosition(-1.0f, 0.0f, 0.0f);
 
 	// Create gizmos to represent lights in 3D space 
-	int sCount = spotLights.size();
-	int dCount = directionalLights.size(); 
-	for (unsigned int i = 0; i < dCount + sCount; i++)
+	int sCount = (int)spotLights.size();
+	int dCount = (int)directionalLights.size();
+	for (int i = 0; i < dCount + sCount; i++)
 	{
 		Light *light = i < sCount ? &spotLights[i] : &directionalLights[i - sCount];
 		DirectX::XMFLOAT4 startColor = DirectX::XMFLOAT4(light->color.x, light->color.y, light->color.z, 1);
@@ -358,12 +314,48 @@ void Game::CreateGeometry()
 		lightGizmos[i]->GetTransform()->SetPosition(light->position);
 		lightToGizmos[light] = lightGizmos[i].get();
 	}
-
-	//entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat3)));
-	//entities.push_back(std::shared_ptr<Entity>(new Entity(square, mat1)));
-	//entities.push_back(std::shared_ptr<Entity>(new Entity(bow, mat2)));
 }
 
+
+void Game::CreateCameras()
+{
+	// Create the cameras 
+	cameras.push_back(std::make_shared<Camera>(
+		0.0f, 0.0f, -5.0f,						// Pos
+		1.0f,									// Move speed
+		10.0f,									// Sprint speed (hold left shift)
+		0.1f,									// Mouse look speed 
+		XM_PIDIV4,								// FOV 
+		this->windowWidth / this->windowHeight	// Aspect ratio 
+		));
+
+	cameras.push_back(std::make_shared<Camera>(
+		0.0f, 0.0f, -20.0f,						// Pos
+		3.0f,									// Move speed
+		10.0f,									// Sprint speed (hold left shift)
+		0.1f,									// Mouse look speed 
+		XM_PIDIV4,								// FOV 
+		this->windowWidth / this->windowHeight	// Aspect ratio 
+		));
+
+	cameras.push_back(std::make_shared<Camera>(
+		2.0f, 1.5f, -15.0f,						// Pos
+		1.0f,									// Move speed
+		10.0f,									// Sprint speed (hold left shift)
+		0.1f,									// Mouse look speed 
+		XM_PI / 8,								// FOV 
+		this->windowWidth / this->windowHeight	// Aspect ratio 
+		));
+
+	cameras.push_back(std::make_shared<Camera>(
+		-1.0f, 1.0f, -5.0f,						// Pos
+		1.0f,									// Move speed
+		10.0f,									// Sprint speed (hold left shift)
+		0.1f,									// Mouse look speed 
+		XM_PIDIV2,								// FOV 
+		this->windowWidth / this->windowHeight	// Aspect ratio 
+		));
+}
 
 // --------------------------------------------------------
 // Handle resizing to match the new window size.
@@ -398,23 +390,55 @@ void Game::CreateEntityGui(std::shared_ptr<Entity> entity)
 	if (ImGui::DragFloat2("UV Offset", &uvOff.x, 0.01f)) entity->GetMat()->SetUVOffset(uvOff);
 }
 
-void Game::CreateLightGui(Light *light)
+void Game::CreateLightGui(Light* light)
 {
+	// GUI that all light types have 
 	XMFLOAT3 color = light->color;
 	XMFLOAT3 position = light->position;
-	XMFLOAT3 direction = light->directiton;
 
-	if (ImGui::DragFloat3("Color", &color.x, 0.01f))
+	//ImGui::ColorEdit4(:Color)
+	if (ImGui::ColorEdit3("Color", &color.x, 0.01f))
 	{
 		light->color = color;
 		lightToGizmos[light]->GetMat()->SetTint(DirectX::XMFLOAT4(color.x, color.y, color.z, 1.0));
 	}
-	if (ImGui::DragFloat3("Position", &position.x, 0.01f))
+	if (ImGui::DragFloat3("GUI Position", &position.x, 0.01f))
 	{
 		light->position = position;
 		lightToGizmos[light]->GetTransform()->SetPosition(position);
 	}
+
+	// Create GUI information for specific light type 
+	switch (light->type)
+	{
+	case LIGHT_TYPE_DIRECTIONAL:
+		CreateDirLightGui(light);
+		break;
+	case LIGHT_TYPE_POINT:
+		CreatePointLightGui(light);
+		break;
+	case LIGHT_TYPE_SPOT: // Currently no spot light 
+	default:
+		break;
+	}
+}
+
+void Game::CreateDirLightGui(Light* light)
+{
+	XMFLOAT3 direction = light->directiton;
 	if (ImGui::DragFloat3("Direction", &direction.x, 0.01f)) light->directiton = direction;
+}
+
+void Game::CreatePointLightGui(Light* light)
+{
+	float range = light->range;
+	if (ImGui::DragFloat("Direction", &range, 0.01f)) light->range = range;
+}
+
+void Game::CreateCamGui(Camera* cam)
+{
+	float commonMoveSpeed = cam->GetCommonMoveSpeed();
+	if (ImGui::DragFloat("Common Move Speed", &commonMoveSpeed, 0.01f)) cam->SetCommonMoveSpeed(commonMoveSpeed);
 }
 
 void Game::UpdateImGui(float deltaTime)
@@ -442,6 +466,14 @@ void Game::UpdateImGui(float deltaTime)
 	ImGui::Text("Window Width: %i", windowWidth);
 	ImGui::Text("Window Height: %i", windowHeight);
 
+	// Buttons 
+	if (ImGui::Button("Entities", ImVec2(90, 25))) {}
+	ImGui::SameLine();
+	if (ImGui::Button("Lights", ImVec2(90, 25))) {}
+	ImGui::SameLine();
+	if (ImGui::Button("Camera", ImVec2(90, 25))) {}
+
+
 	// Display Entity data 
 	if (ImGui::TreeNode("Entities"))
 	{
@@ -460,6 +492,7 @@ void Game::UpdateImGui(float deltaTime)
 		ImGui::TreePop();
 	}
 
+	// Display Light GUI
 	if (ImGui::TreeNode("Lights"))
 	{
 		for (unsigned int i = 0; i < directionalLights.size(); i++)
@@ -502,11 +535,15 @@ void Game::UpdateImGui(float deltaTime)
 				{
 					ImGui::SetItemDefaultFocus();
 					currentCam = n;
+
+					// Resize the screen 
+					OnResize();
 				}
 			}
 		}
 		ImGui::EndCombo();
 	}
+	CreateCamGui(cameras[currentCam].get());
 }
 
 // --------------------------------------------------------
@@ -516,18 +553,6 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	UpdateImGui(deltaTime);
 	float mouseLookSpeed = 2.0f; 
-
-	// Update the transform stuff for current assignment 
-	//entities[0]->GetTransform()->SetPosition((float)cos(totalTime) / 2.0f, 0, 0);
-	//entities[0]->GetTransform()->RotateEuler(0.0f, 0.0f, deltaTime * 2.0f);
-	//entities[1]->GetTransform()->SetPosition(0.0f, 1.3f, 0.0f);
-	//entities[1]->GetTransform()->SetScale((float)(cos(totalTime) + 1.1f) / 2.0f, (float)(sin(totalTime) + 1.5f) / 4.0f, 1.0f);
-	//entities[2]->GetTransform()->MoveAbs(deltaTime * 0.2f, 0, 0);
-	//entities[3]->GetTransform()->RotateEuler(0, 0, deltaTime * 0.5f);
-	//entities[4]->GetTransform()->SetPosition((float)(sin(totalTime)), (float)(sin(totalTime)), 0);
-
-
-	
 
 	cameras[currentCam]->Update(deltaTime);
 

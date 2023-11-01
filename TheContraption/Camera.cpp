@@ -34,6 +34,7 @@ void Camera::Update(float dt)
 {
 	Input& input = Input::GetInstance();
 
+	// On left shift sprint speed 
 	float speed = input.KeyDown(16) ? *sprintMoveSpeed.get() : *moveSpeed.get();
 
 	if (input.KeyDown('W')) 
@@ -106,6 +107,13 @@ void Camera::UpdateProjMatrix(float fov, float aspectRatio)
 	DirectX::XMStoreFloat4x4(projMatrix.get(), proj);
 }
 
+#pragma region Getters
+
+Transform* Camera::GetTransform()
+{
+	return transform;
+}
+
 std::shared_ptr<DirectX::XMFLOAT4X4> Camera::GetViewMatrix()
 {
 	return viewMatrix;
@@ -116,7 +124,15 @@ std::shared_ptr<DirectX::XMFLOAT4X4> Camera::GetProjMatrix()
 	return projMatrix;
 }
 
-Transform* Camera::GetTransform()
+float Camera::GetCommonMoveSpeed()
 {
-	return transform;
+	return *moveSpeed.get();
+}
+
+#pragma endregion
+
+
+void Camera::SetCommonMoveSpeed(float next)
+{
+	*moveSpeed.get() = next;
 }

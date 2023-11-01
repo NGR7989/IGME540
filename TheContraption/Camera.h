@@ -25,8 +25,21 @@ public:
 	void UpdateProjMatrix(float fov, float aspectRatio);
 	Transform* GetTransform();
 
+	// Getters 
 	std::shared_ptr<DirectX::XMFLOAT4X4> GetViewMatrix();
 	std::shared_ptr<DirectX::XMFLOAT4X4> GetProjMatrix();
+	float GetCommonMoveSpeed();
+	float GetSprintMoveSpeed();
+	float GetMouseLookSpeed();
+	float GetNearClip();
+	float GetFarClip();
+
+	// Setters 
+	void SetCommonMoveSpeed(float nextSpeed);
+	void SetSprintMoveSpeed(float nextSpeed);
+	void SetMouseLookSpeed(float nextSpeed);
+	void SetNearClip(float next);
+	void SetFarClip(float next);
 
 private:
 	// Primary matrices 
