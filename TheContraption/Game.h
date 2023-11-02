@@ -1,5 +1,9 @@
 #pragma once
 
+#define SHOW_GUI_ENTITIES 0
+#define SHOW_GUI_LIGHTS 1
+#define SHOW_GUI_CAMERA 2
+
 #include "DXCore.h"
 #include <DirectXMath.h>
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
@@ -37,10 +41,14 @@ private:
 	void CreateGeometry();
 	void CreateCameras();
 
-	// Gui
+	// Gui - Used to tell the computer which gui to display 
 	void UpdateImGui(float deltaTime);
-	void CreateEntityGui(std::shared_ptr<Entity> entity);
+	void UpdateEntityGUI();
+	void UpdateLightGUI();
+	void UpdateCameraGUI();
 
+	// Following code is used to create specific GUI 
+	void CreateEntityGui(std::shared_ptr<Entity> entity);
 	/// <summary>
 	/// Call this function to automatically create a light
 	/// based on the lights type index
@@ -90,6 +98,8 @@ private:
 	std::vector<std::shared_ptr<Entity>> lightGizmos;
 	std::unordered_map<Light*, Entity*> lightToGizmos;
 
+	int currentGUI;
+
 	// Lights 
 	std::vector<Light> directionalLights;
 	std::vector<Light> spotLights;
@@ -98,5 +108,6 @@ private:
 	Light directionalLight3;
 	Light spotLight1;
 	Light spotLight2;
+
 };
 

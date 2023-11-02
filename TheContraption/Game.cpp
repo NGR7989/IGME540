@@ -46,6 +46,7 @@ Game::Game(HINSTANCE hInstance)
 	entities = std::vector<std::shared_ptr<Entity>>();
 	cameras = std::vector<std::shared_ptr<Camera>>();
 	currentCam = 0;
+	currentGUI = 0;
 #endif
 }
 
@@ -109,7 +110,7 @@ void Game::Init()
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX11_Init(device.Get(), context.Get());
 
-
+	
 	OnResize();
 }
 
@@ -441,6 +442,78 @@ void Game::CreateCamGui(Camera* cam)
 	if (ImGui::DragFloat("Common Move Speed", &commonMoveSpeed, 0.01f)) cam->SetCommonMoveSpeed(commonMoveSpeed);
 }
 
+void Game::UpdateEntityGUI()
+{
+	// Display Entity data 
+
+	for (unsigned int i = 0; i < entities.size(); i++)
+	{
+		// Unique id
+		ImGui::PushID(i);
+		if (ImGui::TreeNode("Entity")) // How to make name based on id? 
+		{
+			CreateEntityGui(entities[i]);
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+}
+
+void Game::UpdateLightGUI()
+{
+	// Display Light GUI
+	for (unsigned int i = 0; i < directionalLights.size(); i++)
+	{
+		ImGui::PushID(i);
+		if (ImGui::TreeNode("Directional"))
+		{
+			CreateLightGui(&directionalLights[i]);
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+
+	for (unsigned int i = 0; i < spotLights.size(); i++)
+	{
+		ImGui::PushID(i);
+		if (ImGui::TreeNode("Point"))
+		{
+			CreateLightGui(&spotLights[i]);
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+}
+
+void Game::UpdateCameraGUI()
+{
+	const char* items[] = { "Cam0", "Cam1", "Cam2", "Cam3" };
+	static const char* current_item = items[0];
+
+	if (ImGui::BeginCombo("Cameras", current_item)) // The second parameter is the label previewed before opening the combo.
+	{
+		for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+		{
+			bool is_selected = (current_item != items[n]); // New item 
+			if (ImGui::Selectable(items[n], is_selected))
+			{
+				current_item = items[n];
+				if (is_selected)
+				{
+					ImGui::SetItemDefaultFocus();
+					currentCam = n;
+
+					// Resize the screen 
+					OnResize();
+				}
+			}
+		}
+		ImGui::EndCombo();
+	}
+	CreateCamGui(cameras[currentCam].get());
+}
+
+
 void Game::UpdateImGui(float deltaTime)
 {
 	// Feed fresh input data to ImGui
@@ -467,83 +540,34 @@ void Game::UpdateImGui(float deltaTime)
 	ImGui::Text("Window Height: %i", windowHeight);
 
 	// Buttons 
-	if (ImGui::Button("Entities", ImVec2(90, 25))) {}
+	if (ImGui::Button("Entities", ImVec2(90, 25))) currentGUI = SHOW_GUI_ENTITIES;
 	ImGui::SameLine();
-	if (ImGui::Button("Lights", ImVec2(90, 25))) {}
+	if (ImGui::Button("Lights", ImVec2(90, 25))) currentGUI = SHOW_GUI_LIGHTS;
 	ImGui::SameLine();
-	if (ImGui::Button("Camera", ImVec2(90, 25))) {}
+	if (ImGui::Button("Camera", ImVec2(90, 25))) currentGUI = SHOW_GUI_CAMERA;
 
 
-	// Display Entity data 
-	if (ImGui::TreeNode("Entities"))
+	switch (currentGUI)
 	{
-		for (unsigned int i = 0; i < entities.size(); i++)
-		{
-			// Unique id
-			ImGui::PushID(i);
-			if (ImGui::TreeNode("Entity")) // How to make name based on id? 
-			{
-				CreateEntityGui(entities[i]);
-				ImGui::TreePop();
-			}
-			ImGui::PopID();
-		}
-
-		ImGui::TreePop();
+	case SHOW_GUI_ENTITIES:
+		UpdateEntityGUI();
+		break;
+	case SHOW_GUI_LIGHTS:
+		UpdateLightGUI();
+		break;
+	case SHOW_GUI_CAMERA:
+		UpdateCameraGUI();
+		break;
+	default:
+		break;
 	}
 
-	// Display Light GUI
-	if (ImGui::TreeNode("Lights"))
-	{
-		for (unsigned int i = 0; i < directionalLights.size(); i++)
-		{
-			ImGui::PushID(i);
-			if (ImGui::TreeNode("Directional"))
-			{
-				CreateLightGui(&directionalLights[i]);
-				ImGui::TreePop();
-			}
-			ImGui::PopID();
-		}
+	
 
-		for (unsigned int i = 0; i < spotLights.size(); i++)
-		{
-			ImGui::PushID(i);
-			if (ImGui::TreeNode("Point"))
-			{
-				CreateLightGui(&spotLights[i]);
-				ImGui::TreePop();
-			}
-			ImGui::PopID();
-		}
-		ImGui::TreePop();
-	}
+	
 
 
-	const char* items[] = { "Cam0", "Cam1", "Cam2", "Cam3"};
-	static const char* current_item = items[0];
-
-	if (ImGui::BeginCombo("Cameras", current_item)) // The second parameter is the label previewed before opening the combo.
-	{
-		for (int n = 0; n < IM_ARRAYSIZE(items); n++)
-		{
-			bool is_selected = (current_item != items[n]); // New item 
-			if (ImGui::Selectable(items[n], is_selected))
-			{
-				current_item = items[n];
-				if (is_selected)
-				{
-					ImGui::SetItemDefaultFocus();
-					currentCam = n;
-
-					// Resize the screen 
-					OnResize();
-				}
-			}
-		}
-		ImGui::EndCombo();
-	}
-	CreateCamGui(cameras[currentCam].get());
+	
 }
 
 // --------------------------------------------------------
