@@ -388,6 +388,7 @@ void Game::CreateEntityGui(std::shared_ptr<Entity> entity)
 	if (ImGui::DragFloat3("Rotation (Radians)", &rot.x, 0.01f)) trans->SetEulerRotation(rot);
 	if (ImGui::DragFloat3("Scale", &sca.x, 0.01f)) trans->SetScale(sca);
 
+	ImGui::Dummy(ImVec2(0, 10));
 	if (ImGui::DragFloat2("UV Offset", &uvOff.x, 0.01f)) entity->GetMat()->SetUVOffset(uvOff);
 }
 

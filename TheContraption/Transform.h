@@ -1,6 +1,7 @@
 #pragma once
 #include <DirectXMath.h>
 #include <memory>
+#include <vector>
 
 class Transform
 {
@@ -36,6 +37,9 @@ private:
 	/// Represents this objects position in x, y, and z components 
 	/// </summary>
 	std::shared_ptr<DirectX::XMFLOAT3> position;
+
+	std::vector<std::shared_ptr<Transform>> children;
+	std::shared_ptr<Transform> parent;
 
 public:
 
@@ -120,6 +124,30 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	DirectX::XMFLOAT3 GetForward();
+	/// <summary>
+	/// Get this transform's current parents 
+	/// Nullptr if not possible 
+	/// </summary>
+	/// <returns></returns>
+	std::shared_ptr<Transform> GetParent();
+	/// <summary>
+	/// Get the child trasnform based on index 
+	/// Nullptr if not possible 
+	/// </summary>
+	/// <returns></returns>
+	std::shared_ptr<Transform> GetChild(unsigned int index);
+	/// <summary>
+	/// Get the index of a child of this transform 
+	/// -1 if not a child 
+	/// </summary>
+	/// <param name="child"></param>
+	/// <returns></returns>
+	int GetChildIndex(std::shared_ptr<Transform> child);
+	/// <summary>
+	/// Get the current amount of children directly under this transform
+	/// </summary>
+	/// <returns></returns>
+	unsigned int GetChildCount();
 	#pragma endregion
 
 	#pragma region MUTATORS
@@ -161,4 +189,27 @@ public:
 	void Scale(float scale);
 	#pragma endregion
 
+	#pragma region HIERACHY
+
+	/// <summary>
+	/// Connect a transform to make it relative to this transform 
+	/// </summary>
+	/// <param name="child"></param>
+	void AddChild(std::shared_ptr<Transform> child);
+	/// <summary>
+	/// If possible make a child no longer a child of this transform 
+	/// </summary>
+	/// <param name="child"></param>
+	void RemoveChild(std::shared_ptr<Transform> child);
+	/// <summary>
+	/// If possible make a child no longer a child of this transform 
+	/// </summary>
+	/// <param name="childIndex"></param>
+	void RemoveChild(int childIndex);
+	/// <summary>
+	/// Link this transform to a new parent 
+	/// </summary>
+	/// <param name="parent"></param>
+	void SetParent(std::shared_ptr<Transform> parent);
+	#pragma endregion
 };

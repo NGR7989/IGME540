@@ -11,6 +11,8 @@ Transform::Transform() :
 	matIsDirty = true;
 	dirIsDirty = true;
 
+	parent = nullptr;
+
 	CleanVectors();
 }
 
@@ -171,6 +173,38 @@ DirectX::XMFLOAT3 Transform::GetForward()
 	return forward;
 }
 
+std::shared_ptr<Transform> Transform::GetParent()
+{
+	return parent;
+}
+
+std::shared_ptr<Transform> Transform::GetChild(unsigned int index)
+{
+	return children[index];
+}
+
+int Transform::GetChildIndex(std::shared_ptr<Transform> child)
+{
+	// Better to have a has table? 
+
+	int size = children.size();
+	for (unsigned int i = 0; i < size; i++)
+	{
+		if (child == children[i])
+		{
+			return i;
+		}
+	}
+
+	// If not value is found 
+	return -1;
+}
+
+unsigned int Transform::GetChildCount()
+{
+	return children.size();
+}
+
 #pragma endregion
 
 #pragma region MUTATORS 
@@ -282,6 +316,36 @@ void Transform::Scale(float scale)
 	this->scale.z += scale;
 
 	matIsDirty = true;
+}
+
+#pragma endregion
+
+#pragma region HIERACHY
+
+void Transform::AddChild(std::shared_ptr<Transform> child)
+{
+	children.push_back(child);
+}
+
+void Transform::RemoveChild(std::shared_ptr<Transform> child)
+{
+	int index = GetChildIndex(child);
+	children[index]->SetParent(nullptr);
+	children.erase(children.begin() + index);
+}
+
+void Transform::RemoveChild(int childIndex)
+{
+	children.erase(children.begin() + childIndex);
+}
+
+void Transform::SetParent(std::shared_ptr<Transform> parent)
+{
+	//// Check if currently a child 
+	//if (parent != nullptr)
+	//{
+	//	parent->RemoveChild()
+	//}
 }
 
 #pragma endregion
