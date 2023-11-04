@@ -58,7 +58,7 @@ float3 DirLight(Light light, VertexToPixel input, float3 ambient, float roughnes
 	float3 V = normalize(input.worldPosition - camPos);
 	float3 R = reflect(lightDir, input.normal);
 
-	float spec = pow(saturate(dot(R, V)), specExponent) * GetSpec(input);
+	float spec = pow(saturate(dot(R, V)), specExponent) * GetSpec(input) * any(diffuse);
 
 	return (diffColor * diffuse + spec);
 }
@@ -74,7 +74,7 @@ float3 SpotLight(Light light, VertexToPixel input, float3 ambient, float roughne
 	float3 V = normalize(input.worldPosition - camPos);
 	float3 R = reflect(lightDir, input.normal);
 
-	float spec = pow(saturate(dot(R, V)), specExponent) * GetSpec(input);
+	float spec = pow(saturate(dot(R, V)), specExponent) * GetSpec(input) * any(diffuse);
 
 	return (diffColor * diffuse + spec) * Attenuate(light, input.worldPosition);
 }

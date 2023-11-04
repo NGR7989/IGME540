@@ -204,10 +204,6 @@ void Game::LoadShaders()
 	litShader = std::make_shared<SimplePixelShader>(device, context,
 		FixPath(L"litPS.cso").c_str());
 	
-	
-	//CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(L"../../Assets/Textures/rustymetal.png").c_str(), nullptr, rustyMetal.GetAddressOf());
-	//CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(L"../../Assets/Textures/rustymetal_specular.png").c_str(), nullptr, rustyMetalSpec.GetAddressOf());
-	//CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(L"../../Assets/Textures/original.png").c_str(), nullptr, blankNormal.GetAddressOf());
 }
 
 
@@ -241,6 +237,7 @@ void Game::CreateGeometry()
 	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
 	litCushion = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
 
+	// Create materials 
 	SetupLitMaterial(
 		lit,
 		L"../../Assets/Textures/rustymetal.png", 
@@ -249,16 +246,13 @@ void Game::CreateGeometry()
 		sampDesc
 		);
 
-	// Apply lit texture stuff  
-	/*lit.get()->AddSampler("BasicSampler", rustyMetalSamplerState);
-	lit.get()->AddTextureSRV("SurfaceTexture", rustyMetal);
-	lit.get()->AddTextureSRV("NormalMap", blankNormal);
-	lit.get()->AddTextureSRV("SpeculuarTexture", rustyMetalSpec);*/
-
-	/*litCushion.get()->AddSampler("BasicSampler", rustyMetalSamplerState);
-	litCushion.get()->AddTextureSRV("SurfaceTexture", rustyMetal);
-	litCushion.get()->AddTextureSRV("NormalMap", blankNormal);
-	litCushion.get()->AddTextureSRV("SpeculuarTexture", rustyMetalSpec);*/
+	SetupLitMaterial(
+		litCushion,
+		L"../../Assets/Textures/ass9/cushion.png",
+		L"../../Assets/Textures/rustymetal_specular.png",
+		L"../../Assets/Textures/ass9/cushion_normals.png",
+		sampDesc
+	);
 
 	std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/sphere.obj").c_str());
 	std::shared_ptr<Mesh> helix = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/helix.obj").c_str());
@@ -270,7 +264,7 @@ void Game::CreateGeometry()
 	entities.push_back(std::shared_ptr<Entity>(new Entity(helix, lit)));
 	entities[0]->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
 
-	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, lit)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, litCushion)));
 	entities[1]->GetTransform()->SetPosition(-1.0f, 0.0f, 0.0f);
 
 	// Create gizmos to represent lights in 3D space 
