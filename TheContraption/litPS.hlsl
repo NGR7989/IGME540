@@ -6,6 +6,7 @@
 
 Texture2D SurfaceTexture : register(t0); // "t" registers for textures
 Texture2D SpeculuarTexture : register(t1); // "t" registers for textures
+Texture2D NormalMap : register(t2);
 SamplerState BasicSampler : register(s0); // "s" registers for samplers
 
 cbuffer ExternalData : register(b0)
@@ -21,6 +22,7 @@ cbuffer ExternalData : register(b0)
 	Light spotLight1;
 	Light spotLight2;
 }
+
 
 float2 GetUV(VertexToPixel input)
 {
@@ -90,11 +92,20 @@ float3 SpotLight(Light light, VertexToPixel input, float3 ambient, float roughne
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	//float3 lightDir = normalize(spotLight1.position - input.worldPosition);
-	//float3 diffuse = saturate(dot(input.normal, lightDir));
-	//return float4(diffuse, 1.0f);
-	//float3 diffColor = (diffuse * light.color * GetSurfaceColor(input)) + (ambient * GetSurfaceColor(input));
-	//return diffColor;
+	float3 unpackedNormal = NormalMap.Sample(BasicSampler, input.uv).rgb * 2 - 1;
+	unpackedNormal = normalize(unpackedNormal); // Don’t forget to normalize!
+
+
+	// Simplifications include not re-normalizing the same vector more than once!
+	float3 N = normalize(input.normal); // Must be normalized here or before
+	float3 T = normalize(input.tangent); // Must be normalized here or before
+	T = normalize(T - N * dot(T, N)); // Gram-Schmidt assumes T&N are normalized!
+	float3 B = cross(T, N);
+	float3x3 TBN = float3x3(T, B, N);
+
+	// Assumes that input.normal is the normal later in the shader
+	input.normal = mul(unpackedNormal, TBN); // Note multiplication order!
+
 
 	// Dir lights 
 	float3 light1 = DirLight(directionalLight1, input, ambient, roughness);

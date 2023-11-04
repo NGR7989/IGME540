@@ -19,6 +19,7 @@
 #include "WICTextureLoader.h"
 
 #include "Lights.h"
+#include "MatData.h"
 
 class Game 
 	: public DXCore
@@ -64,12 +65,23 @@ private:
 	/// <param name="cam"></param>
 	void CreateCamGui(Camera* cam);
 
+
+	void SetupLitMaterial(
+		std::shared_ptr<Material> mat, 
+		const wchar_t albedoTextureAddress[],
+		const wchar_t speculuarMapAddress[],
+		const wchar_t normalMapAddress[],
+		D3D11_SAMPLER_DESC sampDesc,
+		const char samplerType[] = "BasicSampler"
+		);
+
 	// Buffers to hold actual geometry data
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 	
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rustyMetal;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rustyMetalSpec;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> blankNormal;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> rustyMetalSamplerState;
 
 
@@ -93,6 +105,9 @@ private:
 	std::shared_ptr<Material> mat2;
 	std::shared_ptr<Material> mat3;
 	std::shared_ptr<Material> lit;
+	std::shared_ptr<Material> litCushion;
+
+	std::unordered_map<std::shared_ptr<Material>, std::shared_ptr<MatData>> matToResources;
 
 	// Light gizmo itmes 
 	std::vector<std::shared_ptr<Entity>> lightGizmos;

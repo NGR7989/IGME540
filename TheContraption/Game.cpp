@@ -161,6 +161,30 @@ void Game::LoadLights()
 	spotLights.push_back(spotLight2);
 }
 
+void Game::SetupLitMaterial(std::shared_ptr<Material> mat,
+	const wchar_t albedoTextureAddress[],
+	const wchar_t speculuarMapAddress[],
+	const wchar_t normalMapAddress[],
+	D3D11_SAMPLER_DESC sampDesc,
+	const char samplerType[])
+{
+	// Create the data storage struct 
+	std::shared_ptr<MatData> tempData = std::make_shared<MatData>(device, sampDesc);
+	matToResources[mat] = tempData;
+	MatData* data = tempData.get();
+
+	// Load in the textures 
+	CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(albedoTextureAddress).c_str(), nullptr, data->albedo.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(speculuarMapAddress).c_str(), nullptr, data->spec.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(normalMapAddress).c_str(), nullptr, data->normal.GetAddressOf());
+
+	// Apply to shader registers 
+	mat.get()->AddSampler("BasicSampler", data->sampler);
+	mat.get()->AddTextureSRV("SurfaceTexture", data->albedo);
+	mat.get()->AddTextureSRV("NormalMap", data->normal);
+	mat.get()->AddTextureSRV("SpeculuarTexture", data->spec);
+}
+
 // --------------------------------------------------------
 // Loads shaders from compiled shader object (.cso) files
 // and also created the Input Layout that describes our 
@@ -171,10 +195,6 @@ void Game::LoadLights()
 // --------------------------------------------------------
 void Game::LoadShaders()
 {
-	CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(L"../../Assets/Textures/rustymetal.png").c_str(), nullptr, rustyMetal.GetAddressOf());
-	CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(L"../../Assets/Textures/rustymetal_specular.png").c_str(), nullptr, rustyMetalSpec.GetAddressOf());
-
-
 	vertexShader = std::make_shared<SimpleVertexShader>(device, context,
 		FixPath(L"VertexShader.cso").c_str());
 	pixelShader = std::make_shared<SimplePixelShader>(device, context,
@@ -183,6 +203,11 @@ void Game::LoadShaders()
 		FixPath(L"CustomPS.cso").c_str());
 	litShader = std::make_shared<SimplePixelShader>(device, context,
 		FixPath(L"litPS.cso").c_str());
+	
+	
+	//CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(L"../../Assets/Textures/rustymetal.png").c_str(), nullptr, rustyMetal.GetAddressOf());
+	//CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(L"../../Assets/Textures/rustymetal_specular.png").c_str(), nullptr, rustyMetalSpec.GetAddressOf());
+	//CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(L"../../Assets/Textures/original.png").c_str(), nullptr, blankNormal.GetAddressOf());
 }
 
 
@@ -191,77 +216,6 @@ void Game::LoadShaders()
 // --------------------------------------------------------
 void Game::CreateGeometry()
 {
-	// Create some temporary variables to represent colors
-	// - Not necessary, just makes things more readable
-	XMFLOAT4 red	= XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-	XMFLOAT4 green	= XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	XMFLOAT4 blue	= XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-
-	// Set up the vertices of the triangle we would like to draw
-	// - We're going to copy this array, exactly as it exists in CPU memory
-	//    over to a Direct3D-controlled data structure on the GPU (the vertex buffer)
-	// - Note: Since we don't have a camera or really any concept of
-	//    a "3d world" yet, we're simply describing positions within the
-	//    bounds of how the rasterizer sees our screen: [-1 to +1] on X and Y
-	// - This means (0,0) is at the very center of the screen.
-	// - These are known as "Normalized Device Coordinates" or "Homogeneous 
-	//    Screen Coords", which are ways to describe a position without
-	//    knowing the exact size (in pixels) of the image/window/etc.  
-	// - Long story short: Resizing the window also resizes the triangle,
-	//    since we're describing the triangle in terms of the window itself
-	Vertex vertices[] =
-	{
-		// Pos,	Normal, UV
-		{ XMFLOAT3(+0.0f, +0.3f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		{ XMFLOAT3(+0.3f, -0.3f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		{ XMFLOAT3(-0.3f, -0.3f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-	};
-
-	// Set up indices, which tell us which vertices to use and in which order
-	// - This is redundant for just 3 vertices, but will be more useful later
-	// - Indices are technically not required if the vertices are in the buffer 
-	//    in the correct order and each one will be used exactly once
-	// - But just to see how it's done...
-	unsigned int indices[] = { 0, 1, 2 };
-
-	std::shared_ptr<Mesh> triangle = std::make_shared<Mesh>(device, context, vertices, indices, sizeof(vertices) / sizeof(Vertex), sizeof(indices) / sizeof(unsigned int));
-	
-
-
-	// Square 
-	Vertex verticesB[] =
-	{
-		{ XMFLOAT3(-0.7f, +0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		{ XMFLOAT3(-0.4f, +0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		{ XMFLOAT3(-0.4f, -0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		{ XMFLOAT3(-0.7f, -0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-	};
-	unsigned int indicesB[] = { 0, 1, 2, 0, 2, 3 };
-
-	std::shared_ptr<Mesh> square = std::make_shared<Mesh>(device, context, verticesB, indicesB, sizeof(verticesB) / sizeof(Vertex), sizeof(indicesB) / sizeof(unsigned int));
-
-
-	Vertex verticesC[] =
-	{
-		{ XMFLOAT3(+0.8f, +0.8f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) }, // Center Top
-
-		{ XMFLOAT3(+0.7f, +0.8f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		{ XMFLOAT3(+0.65f, +0.9f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		{ XMFLOAT3(+0.8f, +1.0f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		{ XMFLOAT3(+0.95f, +0.9f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		{ XMFLOAT3(+0.9f, +0.8f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		
-		{ XMFLOAT3(+0.6f, +0.1f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		{ XMFLOAT3(+1.0f, +0.1f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-	};
-
-
-	unsigned int indicesC[] = { 2, 0, 1,  2, 4, 0,  4, 5, 0,  1, 5, 6,  5, 7, 6};
-
-	std::shared_ptr<Mesh> bow = std::make_shared<Mesh>(device, context, verticesC, indicesC, sizeof(verticesC) / sizeof(Vertex), sizeof(indicesC) / sizeof(unsigned int));
-
-
-
 	D3D11_SAMPLER_DESC sampDesc = {};
 
 	// How to handles uvs going outside of range 
@@ -279,19 +233,37 @@ void Game::CreateGeometry()
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	// Creates the sampler 
-	device.Get()->CreateSamplerState(&sampDesc, rustyMetalSamplerState.GetAddressOf());
+	//device.Get()->CreateSamplerState(&sampDesc, rustyMetalSamplerState.GetAddressOf());
 
 	mat1 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 1.0f, DirectX::XMFLOAT2(0,0), vertexShader, customPShader);
 	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
 	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
 	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
+	litCushion = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
 
-	lit.get()->AddSampler("BasicSampler", rustyMetalSamplerState);
+	SetupLitMaterial(
+		lit,
+		L"../../Assets/Textures/rustymetal.png", 
+		L"../../Assets/Textures/rustymetal_specular.png",
+		L"../../Assets/Textures/original.png",
+		sampDesc
+		);
+
+	// Apply lit texture stuff  
+	/*lit.get()->AddSampler("BasicSampler", rustyMetalSamplerState);
 	lit.get()->AddTextureSRV("SurfaceTexture", rustyMetal);
-	lit.get()->AddTextureSRV("SpeculuarTexture", rustyMetalSpec);
+	lit.get()->AddTextureSRV("NormalMap", blankNormal);
+	lit.get()->AddTextureSRV("SpeculuarTexture", rustyMetalSpec);*/
+
+	/*litCushion.get()->AddSampler("BasicSampler", rustyMetalSamplerState);
+	litCushion.get()->AddTextureSRV("SurfaceTexture", rustyMetal);
+	litCushion.get()->AddTextureSRV("NormalMap", blankNormal);
+	litCushion.get()->AddTextureSRV("SpeculuarTexture", rustyMetalSpec);*/
 
 	std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/sphere.obj").c_str());
 	std::shared_ptr<Mesh> helix = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/helix.obj").c_str());
+	std::shared_ptr<Mesh> cube = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/cube.obj").c_str());
+	std::shared_ptr<Mesh> torus = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/torus.obj").c_str());
 	std::shared_ptr<Mesh> lightGUIModel = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/LightGUIModel.obj").c_str());
 	
 	// Add all entites to the primary vector 
@@ -308,9 +280,11 @@ void Game::CreateGeometry()
 	{
 		Light *light = i < sCount ? &spotLights[i] : &directionalLights[i - sCount];
 		DirectX::XMFLOAT4 startColor = DirectX::XMFLOAT4(light->color.x, light->color.y, light->color.z, 1);
+		
+		// Light gizmos mat
 		std::shared_ptr<Material> mat = std::make_shared<Material>(startColor, 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
 
-
+		// Add light gizmos to their own vector 
 		lightGizmos.push_back(std::shared_ptr<Entity>(new Entity(lightGUIModel, mat)));
 		lightGizmos[i]->GetTransform()->SetPosition(light->position);
 		lightToGizmos[light] = lightGizmos[i].get();

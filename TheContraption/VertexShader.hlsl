@@ -31,6 +31,7 @@ struct VertexShaderInput
 	//  v    v                v
 	float3 localPosition	: POSITION;     // XYZ position
 	float3 normal			: NORMAL;
+	float3 tangent			: TANGENT;
 	float4 uv				: TEXCOORD;   
 };
 
@@ -51,8 +52,8 @@ VertexToPixel main( VertexShaderInput input )
 
 	output.uv = input.uv;
 
-	//output.normal = mul((float3x3)worldInvTranspose, input.normal); // Perfect
-	output.normal = input.normal; //mul((float3x3)world, input.normal);
+	output.normal = mul((float3x3)worldInvTranspose, input.normal); // Perfect
+	output.tangent = mul((float3x3)world, input.tangent);
 	output.worldPosition = mul(world, float4(input.localPosition, 1.0f)).xyz;
 
 	// Whatever we return will make its way through the pipeline to the

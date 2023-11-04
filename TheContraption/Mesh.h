@@ -24,6 +24,8 @@ private:
 	int indicesCount;
 	int vertexCount;
 
+	void CalculateTangents(Vertex* verts, int numVerts, unsigned int* indices, int numIndices);
+
 public:
 	/// <summary>
 	/// Create a mesh based on manually given vertex data

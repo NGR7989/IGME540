@@ -34,6 +34,7 @@ struct VertexToPixel
 	float3 worldPosition	: POSITION;
 	float2 uv				: TEXCOORD;
 	float3 normal			: NORMAL;
+	float3 tangent			: TANGENT;
 };
 
 float rand2(float2 n) { return frac(sin(dot(n, float2(12.9898, 4.1414))) * 43758.5453); }
