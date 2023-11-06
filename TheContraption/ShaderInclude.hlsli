@@ -37,6 +37,26 @@ struct VertexToPixel
 	float3 tangent			: TANGENT;
 };
 
+struct VertexToPixel_Sky
+{
+	float4 screenPosition	: SV_POSITION;
+	float3 sampleDir		: DIRECTION;
+};
+
+
+struct VertexShaderInput
+{
+	// Data type
+	//  |
+	//  |   Name          Semantic
+	//  |    |                |
+	//  v    v                v
+	float3 localPosition	: POSITION;     // XYZ position
+	float3 normal			: NORMAL;
+	float3 tangent			: TANGENT;
+	float4 uv				: TEXCOORD;
+};
+
 float rand2(float2 n) { return frac(sin(dot(n, float2(12.9898, 4.1414))) * 43758.5453); }
 
 

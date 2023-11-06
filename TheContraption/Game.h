@@ -21,6 +21,8 @@
 #include "Lights.h"
 #include "MatData.h"
 
+#include "Sky.h"
+
 class Game 
 	: public DXCore
 {
@@ -79,12 +81,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 	
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rustyMetal;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rustyMetalSpec;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> blankNormal;
-	Microsoft::WRL::ComPtr<ID3D11SamplerState> rustyMetalSamplerState;
-
-
 	// Shaders and shader-related constructs
 	std::shared_ptr<SimplePixelShader> pixelShader;
 	std::shared_ptr<SimplePixelShader> litShader;
@@ -106,6 +102,7 @@ private:
 	std::shared_ptr<Material> mat3;
 	std::shared_ptr<Material> lit;
 	std::shared_ptr<Material> litCushion;
+	std::shared_ptr<Material> litBricks;
 
 	std::unordered_map<std::shared_ptr<Material>, std::shared_ptr<MatData>> matToResources;
 
@@ -124,5 +121,9 @@ private:
 	Light spotLight1;
 	Light spotLight2;
 
+
+	// Skybox 
+	std::shared_ptr<Sky> sky;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> skySampler; // TODO put into skybox 
 };
 

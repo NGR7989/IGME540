@@ -11,7 +11,7 @@
 // Assumes files are in "ImGui" subfolder!
 // Adjust path as necessary
 #include "ImGui/imgui.h"
-#include "ImGui/imgui_impl_dx11.h"
+#include "ImGui/imgui_impl_dx11.h" 
 #include "ImGui/imgui_impl_win32.h"
 
 // Needed for a helper function to load pre-compiled shader files
@@ -236,6 +236,7 @@ void Game::CreateGeometry()
 	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
 	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
 	litCushion = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
+	litBricks = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
 
 	// Create materials 
 	SetupLitMaterial(
@@ -249,8 +250,16 @@ void Game::CreateGeometry()
 	SetupLitMaterial(
 		litCushion,
 		L"../../Assets/Textures/ass9/cushion.png",
-		L"../../Assets/Textures/rustymetal_specular.png",
+		L"../../Assets/Textures/white.jpg",
 		L"../../Assets/Textures/ass9/cushion_normals.png",
+		sampDesc
+	);
+
+	SetupLitMaterial(
+		litBricks,
+		L"../../Assets/Textures/ass9/cobblestone.png",
+		L"../../Assets/Textures/white.jpg",
+		L"../../Assets/Textures/ass9/cobblestone_normals.png",
 		sampDesc
 	);
 
@@ -266,6 +275,9 @@ void Game::CreateGeometry()
 
 	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, litCushion)));
 	entities[1]->GetTransform()->SetPosition(-1.0f, 0.0f, 0.0f);
+
+	entities.push_back(std::make_shared<Entity>(cube, litBricks));
+	entities[2]->GetTransform()->MoveRelative(4.0f, 0.0f, 0.0f);
 
 	// Create gizmos to represent lights in 3D space 
 	int sCount = (int)spotLights.size();
@@ -283,6 +295,22 @@ void Game::CreateGeometry()
 		lightGizmos[i]->GetTransform()->SetPosition(light->position);
 		lightToGizmos[light] = lightGizmos[i].get();
 	}
+
+
+	// Create skybox 
+	device->CreateSamplerState(&sampDesc, skySampler.GetAddressOf());
+
+	sky = std::make_shared<Sky>(
+		device, context, 
+		skySampler,
+		cube,
+		L"../../Assets/Textures/Skies/Planet/right.png",
+		L"../../Assets/Textures/Skies/Planet/left.png",
+		L"../../Assets/Textures/Skies/Planet/up.png",
+		L"../../Assets/Textures/Skies/Planet/down.png",
+		L"../../Assets/Textures/Skies/Planet/front.png",
+		L"../../Assets/Textures/Skies/Planet/back.png"
+		);
 }
 
 
@@ -632,4 +660,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Must re-bind buffers after presenting, as they become unbound
 		context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthBufferDSV.Get());
 	}
+
+	sky->Draw(cameras[currentCam]);
 }
