@@ -47,6 +47,7 @@ Game::Game(HINSTANCE hInstance)
 	cameras = std::vector<std::shared_ptr<Camera>>();
 	currentCam = 0;
 	currentGUI = 0;
+
 #endif
 }
 
@@ -165,11 +166,10 @@ void Game::SetupLitMaterial(std::shared_ptr<Material> mat,
 	const wchar_t albedoTextureAddress[],
 	const wchar_t speculuarMapAddress[],
 	const wchar_t normalMapAddress[],
-	D3D11_SAMPLER_DESC sampDesc,
 	const char samplerType[])
 {
 	// Create the data storage struct 
-	std::shared_ptr<MatData> tempData = std::make_shared<MatData>(device, sampDesc);
+	std::shared_ptr<MatData> tempData = std::make_shared<MatData>(device);
 	matToResources[mat] = tempData;
 	MatData* data = tempData.get();
 
@@ -179,7 +179,7 @@ void Game::SetupLitMaterial(std::shared_ptr<Material> mat,
 	CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(normalMapAddress).c_str(), nullptr, data->normal.GetAddressOf());
 
 	// Apply to shader registers 
-	mat.get()->AddSampler("BasicSampler", data->sampler);
+	mat.get()->AddSampler("BasicSampler", sampler);
 	mat.get()->AddTextureSRV("SurfaceTexture", data->albedo);
 	mat.get()->AddTextureSRV("NormalMap", data->normal);
 	mat.get()->AddTextureSRV("SpeculuarTexture", data->spec);
@@ -229,7 +229,7 @@ void Game::CreateGeometry()
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	// Creates the sampler 
-	//device.Get()->CreateSamplerState(&sampDesc, rustyMetalSamplerState.GetAddressOf());
+	device.Get()->CreateSamplerState(&sampDesc, sampler.GetAddressOf());
 
 	mat1 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 1.0f, DirectX::XMFLOAT2(0,0), vertexShader, customPShader);
 	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
@@ -242,16 +242,14 @@ void Game::CreateGeometry()
 		lit,
 		L"../../Assets/Textures/rustymetal.png", 
 		L"../../Assets/Textures/rustymetal_specular.png",
-		L"../../Assets/Textures/original.png",
-		sampDesc
+		L"../../Assets/Textures/original.png"
 		);
 
 	SetupLitMaterial(
 		litCushion,
 		L"../../Assets/Textures/ass9/cushion.png",
 		L"../../Assets/Textures/rustymetal_specular.png",
-		L"../../Assets/Textures/ass9/cushion_normals.png",
-		sampDesc
+		L"../../Assets/Textures/ass9/cushion_normals.png"
 	);
 
 	std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/sphere.obj").c_str());
@@ -283,6 +281,20 @@ void Game::CreateGeometry()
 		lightGizmos[i]->GetTransform()->SetPosition(light->position);
 		lightToGizmos[light] = lightGizmos[i].get();
 	}
+
+
+	sky = std::make_shared<Sky>(
+		device,
+		context,
+		sampler,
+		cube,
+		L"../../Assets/Textures/Skies/Planet/right.png",
+		L"../../Assets/Textures/Skies/Planet/left.png",
+		L"../../Assets/Textures/Skies/Planet/up.png",
+		L"../../Assets/Textures/Skies/Planet/down.png",
+		L"../../Assets/Textures/Skies/Planet/front.png",
+		L"../../Assets/Textures/Skies/Planet/back.png"
+		);
 }
 
 
@@ -609,7 +621,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 		lightGizmos[i]->Draw(context, cameras[currentCam]);
 	}
-
+	sky->Draw(cameras[currentCam]);
 	// Frame END
 	// - These should happen exactly ONCE PER FRAME
 	// - At the very end of the frame (after drawing *everything*)
@@ -632,4 +644,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Must re-bind buffers after presenting, as they become unbound
 		context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthBufferDSV.Get());
 	}
+
+	
 }

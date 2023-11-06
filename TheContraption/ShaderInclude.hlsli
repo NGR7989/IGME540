@@ -18,6 +18,24 @@ struct Light
 	float3 padding;
 };
 
+// Struct representing a single vertex worth of data
+// - This should match the vertex definition in our C++ code
+// - By "match", I mean the size, order and number of members
+// - The name of the struct itself is unimportant, but should be descriptive
+// - Each variable must have a semantic, which defines its usage
+struct VertexShaderInput
+{
+	// Data type
+	//  |
+	//  |   Name          Semantic
+	//  |    |                |
+	//  v    v                v
+	float3 localPosition	: POSITION;     // XYZ position
+	float3 normal			: NORMAL;
+	float3 tangent			: TANGENT;
+	float4 uv				: TEXCOORD;
+};
+
 // Struct representing the data we expect to receive from earlier pipeline stages
 // - Should match the output of our corresponding vertex shader
 // - The name of the struct itself is unimportant
@@ -35,6 +53,12 @@ struct VertexToPixel
 	float2 uv				: TEXCOORD;
 	float3 normal			: NORMAL;
 	float3 tangent			: TANGENT;
+};
+
+struct VertexToPixel_Sky
+{
+	float4 position		: SV_POSITION;
+	float3 sampleDir	: DIRECTION;
 };
 
 float rand2(float2 n) { return frac(sin(dot(n, float2(12.9898, 4.1414))) * 43758.5453); }

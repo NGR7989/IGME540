@@ -21,6 +21,8 @@
 #include "Lights.h"
 #include "MatData.h"
 
+#include "Sky.h"
+
 class Game 
 	: public DXCore
 {
@@ -71,7 +73,6 @@ private:
 		const wchar_t albedoTextureAddress[],
 		const wchar_t speculuarMapAddress[],
 		const wchar_t normalMapAddress[],
-		D3D11_SAMPLER_DESC sampDesc,
 		const char samplerType[] = "BasicSampler"
 		);
 
@@ -107,6 +108,8 @@ private:
 	std::shared_ptr<Material> lit;
 	std::shared_ptr<Material> litCushion;
 
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
+
 	std::unordered_map<std::shared_ptr<Material>, std::shared_ptr<MatData>> matToResources;
 
 	// Light gizmo itmes 
@@ -123,6 +126,9 @@ private:
 	Light directionalLight3;
 	Light spotLight1;
 	Light spotLight2;
+
+	// Skybox 
+	std::shared_ptr<Sky> sky;
 
 };
 
