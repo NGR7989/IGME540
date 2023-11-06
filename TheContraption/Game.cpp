@@ -203,7 +203,8 @@ void Game::LoadShaders()
 		FixPath(L"CustomPS.cso").c_str());
 	litShader = std::make_shared<SimplePixelShader>(device, context,
 		FixPath(L"litPS.cso").c_str());
-	
+	schlickShader = std::make_shared< SimplePixelShader>(device, context,
+		FixPath(L"Schlick.cso").c_str());
 }
 
 
@@ -231,19 +232,42 @@ void Game::CreateGeometry()
 	// Creates the sampler 
 	device.Get()->CreateSamplerState(&sampDesc, sampler.GetAddressOf());
 
+
 	mat1 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 1.0f, DirectX::XMFLOAT2(0,0), vertexShader, customPShader);
 	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
 	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
 	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
 	litCushion = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
+	litBricks = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, schlickShader);
+
+	
+
+	std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/sphere.obj").c_str());
+	std::shared_ptr<Mesh> helix = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/helix.obj").c_str());
+	std::shared_ptr<Mesh> cube = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/cube.obj").c_str());
+	std::shared_ptr<Mesh> torus = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/torus.obj").c_str());
+	std::shared_ptr<Mesh> lightGUIModel = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/LightGUIModel.obj").c_str());
+
+	sky = std::make_shared<Sky>(
+		device,
+		context,
+		sampler,
+		cube,
+		L"../../Assets/Textures/Skies/Planet/right.png",
+		L"../../Assets/Textures/Skies/Planet/left.png",
+		L"../../Assets/Textures/Skies/Planet/up.png",
+		L"../../Assets/Textures/Skies/Planet/down.png",
+		L"../../Assets/Textures/Skies/Planet/front.png",
+		L"../../Assets/Textures/Skies/Planet/back.png"
+		);
 
 	// Create materials 
 	SetupLitMaterial(
 		lit,
-		L"../../Assets/Textures/rustymetal.png", 
+		L"../../Assets/Textures/rustymetal.png",
 		L"../../Assets/Textures/rustymetal_specular.png",
 		L"../../Assets/Textures/original.png"
-		);
+	);
 
 	SetupLitMaterial(
 		litCushion,
@@ -252,11 +276,13 @@ void Game::CreateGeometry()
 		L"../../Assets/Textures/ass9/cushion_normals.png"
 	);
 
-	std::shared_ptr<Mesh> sphere = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/sphere.obj").c_str());
-	std::shared_ptr<Mesh> helix = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/helix.obj").c_str());
-	std::shared_ptr<Mesh> cube = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/cube.obj").c_str());
-	std::shared_ptr<Mesh> torus = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/torus.obj").c_str());
-	std::shared_ptr<Mesh> lightGUIModel = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/LightGUIModel.obj").c_str());
+	SetupLitMaterial(
+		litBricks,
+		L"../../Assets/Textures/ass9/cushion.png",
+		L"../../Assets/Textures/rustymetal_specular.png",
+		L"../../Assets/Textures/ass9/cushion_normals.png"
+	);
+	litBricks->AddTextureSRV("Environment", sky->GetCubeSRV());
 	
 	// Add all entites to the primary vector 
 	entities.push_back(std::shared_ptr<Entity>(new Entity(helix, lit)));
@@ -264,6 +290,9 @@ void Game::CreateGeometry()
 
 	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, litCushion)));
 	entities[1]->GetTransform()->SetPosition(-1.0f, 0.0f, 0.0f);
+
+	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, litBricks)));
+	entities[2]->GetTransform()->MoveRelative(5.0f, 0.0f, 0.0f);
 
 	// Create gizmos to represent lights in 3D space 
 	int sCount = (int)spotLights.size();
@@ -283,18 +312,7 @@ void Game::CreateGeometry()
 	}
 
 
-	sky = std::make_shared<Sky>(
-		device,
-		context,
-		sampler,
-		cube,
-		L"../../Assets/Textures/Skies/Planet/right.png",
-		L"../../Assets/Textures/Skies/Planet/left.png",
-		L"../../Assets/Textures/Skies/Planet/up.png",
-		L"../../Assets/Textures/Skies/Planet/down.png",
-		L"../../Assets/Textures/Skies/Planet/front.png",
-		L"../../Assets/Textures/Skies/Planet/back.png"
-		);
+	
 }
 
 
@@ -542,13 +560,6 @@ void Game::UpdateImGui(float deltaTime)
 	default:
 		break;
 	}
-
-	
-
-	
-
-
-	
 }
 
 // --------------------------------------------------------
@@ -586,12 +597,6 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 	for (unsigned int i = 0; i < entities.size(); i++)
 	{
-		//if (i == 0) // JUST FOR THE NOISE SPHERE
-		//{
-		//	entities[i]->Draw(context, cameras[currentCam], totalTime);
-		//	continue;
-		//}
-
 		DirectX::XMFLOAT3 ambient(0.1f, 0.1f, 0.25f);
 		entities[i]->GetMat()->GetPixelShader()->SetFloat3("ambient", ambient);
 

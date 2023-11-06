@@ -26,6 +26,7 @@ public:
 	);
 
 	void Draw(std::shared_ptr<Camera> cam);
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> GetCubeSRV();
 private:
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cubeSRV;

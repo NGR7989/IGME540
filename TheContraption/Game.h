@@ -89,6 +89,7 @@ private:
 	// Shaders and shader-related constructs
 	std::shared_ptr<SimplePixelShader> pixelShader;
 	std::shared_ptr<SimplePixelShader> litShader;
+	std::shared_ptr<SimplePixelShader> schlickShader;
 	std::shared_ptr<SimplePixelShader> customPShader;
 	std::shared_ptr<SimpleVertexShader> vertexShader;
 
@@ -107,6 +108,7 @@ private:
 	std::shared_ptr<Material> mat3;
 	std::shared_ptr<Material> lit;
 	std::shared_ptr<Material> litCushion;
+	std::shared_ptr<Material> litBricks;
 
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
 

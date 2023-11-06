@@ -73,6 +73,11 @@ void Sky::Draw(std::shared_ptr<Camera> cam)
     context->OMSetDepthStencilState(0, 0);
 }
 
+Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Sky::GetCubeSRV()
+{
+    return cubeSRV;
+}
+
 Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Sky::CreateCubemap(const wchar_t* right, const wchar_t* left, const wchar_t* up, const wchar_t* down, const wchar_t* front, const wchar_t* back)
 {
     // Load the 6 textures into an array.

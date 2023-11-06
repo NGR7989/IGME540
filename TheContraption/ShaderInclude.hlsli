@@ -78,5 +78,14 @@ float gnoise(float2 n) {
 	return lerp(x, y, f.y);
 }
 
+float SimpleFresnel(float3 n, float3 v, float f0)
+{
+	// Pre-calculations
+	float NdotV = saturate(dot(n, v));
+
+	// Final value
+	return f0 + (1 - f0) * pow(1 - NdotV, 5);
+}
+
 
 #endif
