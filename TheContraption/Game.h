@@ -107,8 +107,8 @@ private:
 	std::shared_ptr<Material> mat2;
 	std::shared_ptr<Material> mat3;
 	std::shared_ptr<Material> lit;
-	std::shared_ptr<Material> litCushion;
-	std::shared_ptr<Material> litBricks;
+	std::shared_ptr<Material> schlickBricks;
+	std::shared_ptr<Material> schlickCushions;
 
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
 

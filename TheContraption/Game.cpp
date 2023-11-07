@@ -237,8 +237,10 @@ void Game::CreateGeometry()
 	mat2 = std::make_shared<Material>(DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
 	mat3 = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 0, 1), 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
 	lit = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
-	litCushion = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
-	litBricks = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, schlickShader);
+	//litCushion = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, litShader);
+
+	schlickBricks = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, schlickShader);
+	schlickCushions = std::make_shared<Material>(DirectX::XMFLOAT4(1, 1, 1, 1), 0.5f, DirectX::XMFLOAT2(0, 0), vertexShader, schlickShader);
 
 	
 
@@ -269,30 +271,41 @@ void Game::CreateGeometry()
 		L"../../Assets/Textures/original.png"
 	);
 
-	SetupLitMaterial(
+	/*SetupLitMaterial(
 		litCushion,
 		L"../../Assets/Textures/ass9/cushion.png",
 		L"../../Assets/Textures/rustymetal_specular.png",
 		L"../../Assets/Textures/ass9/cushion_normals.png"
-	);
+	);*/
 
 	SetupLitMaterial(
-		litBricks,
+		schlickBricks,
+		L"../../Assets/Textures/ass9/cobblestone.png",
+		L"../../Assets/Textures/rustymetal_specular.png",
+		L"../../Assets/Textures/ass9/cobblestone_normals.png"
+	);
+	schlickBricks->AddTextureSRV("Environment", sky->GetCubeSRV());
+
+	SetupLitMaterial(
+		schlickCushions,
 		L"../../Assets/Textures/ass9/cushion.png",
 		L"../../Assets/Textures/rustymetal_specular.png",
 		L"../../Assets/Textures/ass9/cushion_normals.png"
 	);
-	litBricks->AddTextureSRV("Environment", sky->GetCubeSRV());
+	schlickCushions->AddTextureSRV("Environment", sky->GetCubeSRV());
 	
 	// Add all entites to the primary vector 
 	entities.push_back(std::shared_ptr<Entity>(new Entity(helix, lit)));
 	entities[0]->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
 
-	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, litCushion)));
-	entities[1]->GetTransform()->SetPosition(-1.0f, 0.0f, 0.0f);
+	//entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, litCushion)));
+	//entities[1]->GetTransform()->SetPosition(-1.0f, 0.0f, 0.0f);
 
-	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, litBricks)));
-	entities[2]->GetTransform()->MoveRelative(5.0f, 0.0f, 0.0f);
+	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, schlickBricks)));
+	entities[1]->GetTransform()->MoveRelative(5.0f, 0.0f, 0.0f);
+
+	entities.push_back(std::shared_ptr<Entity>(new Entity(cube, schlickCushions)));
+	entities[2]->GetTransform()->MoveRelative(-5.0f, 0.0f, 0.0f);
 
 	// Create gizmos to represent lights in 3D space 
 	int sCount = (int)spotLights.size();
@@ -432,7 +445,7 @@ void Game::CreateDirLightGui(Light* light)
 void Game::CreatePointLightGui(Light* light)
 {
 	float range = light->range;
-	if (ImGui::DragFloat("Direction", &range, 0.01f)) light->range = range;
+	if (ImGui::DragFloat("Range", &range, 0.01f)) light->range = range;
 }
 
 void Game::CreateCamGui(Camera* cam)

@@ -127,7 +127,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float3 reflectionColor = Environment.Sample(BasicSampler, reflectionVector).rgb;
 
 	// 0.04f is recommended amount 
-	float3 finalColor = lerp(totalLight, reflectionColor, SimpleFresnel(input.normal, viewVector, 1.0f));
+	float3 finalColor = lerp(totalLight, reflectionColor, SimpleFresnel(input.normal, viewVector, 0.04f));
 
 	return float4(finalColor, 1);
 }
