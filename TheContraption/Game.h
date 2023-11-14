@@ -132,17 +132,20 @@ private:
 	// Light gizmo itmes 
 	std::vector<std::shared_ptr<Entity>> lightGizmos;
 	std::unordered_map<Light*, Entity*> lightToGizmos;
-
+	
+	// Changes between entities, lights, and camera 
 	int currentGUI;
 
 	// Lights 
-	std::vector<Light> directionalLights;
-	std::vector<Light> spotLights;
+	//std::vector<Light> directionalLights;
+	//std::vector<Light> spotLights;
+
+	std::vector<Light> lights;
 	Light directionalLight1;
 	Light directionalLight2;
 	Light directionalLight3;
-	Light spotLight1;
-	Light spotLight2;
+	Light pointLight1;
+	Light pointLight2;
 
 	// Skybox 
 	std::shared_ptr<Sky> sky;

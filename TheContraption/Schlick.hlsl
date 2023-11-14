@@ -21,8 +21,8 @@ cbuffer ExternalData : register(b0)
 	Light directionalLight1;
 	Light directionalLight2;
 	Light directionalLight3;
-	Light spotLight1;
-	Light spotLight2;
+	Light pointLight1;
+	Light pointLight2;
 }
 
 
@@ -65,7 +65,7 @@ float3 DirLight(Light light, VertexToPixel input, float3 ambient, float roughnes
 	return (diffColor * diffuse + spec);
 }
 
-float3 SpotLight(Light light, VertexToPixel input, float3 ambient, float roughness)
+float3 PointLight(Light light, VertexToPixel input, float3 ambient, float roughness)
 {
 	float3 lightDir = normalize(light.position - input.worldPosition);
 	float3 diffuse = saturate(dot(input.normal, lightDir));
@@ -115,8 +115,8 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float3 light3 = DirLight(directionalLight3, input, ambient, roughness);
 
 	// Point lights
-	float3 light4 = SpotLight(spotLight1, input, ambient, roughness);
-	float3 light5 = SpotLight(spotLight2, input, ambient, roughness);
+	float3 light4 = PointLight(pointLight1, input, ambient, roughness);
+	float3 light5 = PointLight(pointLight2, input, ambient, roughness);
 
 	float3 totalLight = light1 + light2 + light3 + light4 + light5;
 

@@ -120,46 +120,44 @@ void Game::Init()
 /// </summary>
 void Game::LoadLights()
 {
-	directionalLights = std::vector<Light>();
+	lights = std::vector<Light>();
 
 	directionalLight1 = {};
 	directionalLight1.type = LIGHT_TYPE_DIRECTIONAL;
 	directionalLight1.directiton = DirectX::XMFLOAT3(1, -1, 0);
 	directionalLight1.color = DirectX::XMFLOAT3(0.2f, 0.2f, 0.2f);
 	directionalLight1.intensity = 1.0;
-	directionalLights.push_back(directionalLight1);
+	lights.push_back(directionalLight1);
 
 	directionalLight2 = {};
 	directionalLight2.type = LIGHT_TYPE_DIRECTIONAL;
 	directionalLight2.directiton = DirectX::XMFLOAT3(0, -1, 0);
 	directionalLight2.color = DirectX::XMFLOAT3(1, 1, 1);
 	directionalLight2.intensity = 1.0;
-	directionalLights.push_back(directionalLight2);
+	lights.push_back(directionalLight2);
 
 	directionalLight3 = {};
 	directionalLight3.type = LIGHT_TYPE_DIRECTIONAL;
 	directionalLight3.directiton = DirectX::XMFLOAT3(-0.2f, 1, 0);
 	directionalLight3.color = DirectX::XMFLOAT3(0, 1, 0);
 	directionalLight3.intensity = 1.0;
-	directionalLights.push_back(directionalLight3);
+	lights.push_back(directionalLight3);
 
-	spotLights = std::vector<Light>();
+	pointLight1 = {};
+	pointLight1.type = LIGHT_TYPE_POINT;
+	pointLight1.position = DirectX::XMFLOAT3(2, 2, 0);
+	pointLight1.color = DirectX::XMFLOAT3(0, 1, 0);
+	pointLight1.intensity = 1.0;
+	pointLight1.range = 40.0;
+	lights.push_back(pointLight1);
 
-	spotLight1 = {};
-	spotLight1.type = LIGHT_TYPE_POINT;
-	spotLight1.position = DirectX::XMFLOAT3(2, 2, 0);
-	spotLight1.color = DirectX::XMFLOAT3(0, 1, 0);
-	spotLight1.intensity = 1.0;
-	spotLight1.range = 40.0;
-	spotLights.push_back(spotLight1);
-
-	spotLight2 = {};
-	spotLight2.type = LIGHT_TYPE_POINT;
-	spotLight2.position = DirectX::XMFLOAT3(1, -3, 0);
-	spotLight2.color = DirectX::XMFLOAT3(0, 0, 1);
-	spotLight2.intensity = 1.0;
-	spotLight2.range = 100.0;
-	spotLights.push_back(spotLight2);
+	pointLight2 = {};
+	pointLight2.type = LIGHT_TYPE_POINT;
+	pointLight2.position = DirectX::XMFLOAT3(1, -3, 0);
+	pointLight2.color = DirectX::XMFLOAT3(0, 0, 1);
+	pointLight2.intensity = 1.0;
+	pointLight2.range = 100.0;
+	lights.push_back(pointLight2);
 }
 
 void Game::SetupLitMaterial(std::shared_ptr<Material> mat,
@@ -308,11 +306,11 @@ void Game::CreateGeometry()
 	entities[2]->GetTransform()->MoveRelative(-5.0f, 0.0f, 0.0f);
 
 	// Create gizmos to represent lights in 3D space 
-	int sCount = (int)spotLights.size();
-	int dCount = (int)directionalLights.size();
-	for (int i = 0; i < dCount + sCount; i++)
+	//int sCount = (int)spotLights.size();
+	//int dCount = (int)directionalLights.size();
+	for (int i = 0; i < lights.size(); i++)
 	{
-		Light *light = i < sCount ? &spotLights[i] : &directionalLights[i - sCount];
+		Light* light = &lights[i]; //i < sCount ? &spotLights[i] : &directionalLights[i - sCount];
 		DirectX::XMFLOAT4 startColor = DirectX::XMFLOAT4(light->color.x, light->color.y, light->color.z, 1);
 		
 		// Light gizmos mat
@@ -474,7 +472,7 @@ void Game::UpdateEntityGUI()
 void Game::UpdateLightGUI()
 {
 	// Display Light GUI
-	for (unsigned int i = 0; i < directionalLights.size(); i++)
+	/*for (unsigned int i = 0; i < directionalLights.size(); i++)
 	{
 		ImGui::PushID(i);
 		if (ImGui::TreeNode("Directional"))
@@ -491,6 +489,17 @@ void Game::UpdateLightGUI()
 		if (ImGui::TreeNode("Point"))
 		{
 			CreateLightGui(&spotLights[i]);
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}*/
+
+	for (unsigned int i = 0; i < lights.size(); i++)
+	{
+		ImGui::PushID(i);
+		if (ImGui::TreeNode(lights[i].type == LIGHT_TYPE_DIRECTIONAL ? "Directional" : "Point")) // TODO - Account for more light types 
+		{
+			CreateLightGui(&lights[i]);
 			ImGui::TreePop();
 		}
 		ImGui::PopID();
@@ -770,20 +779,49 @@ void Game::Draw(float deltaTime, float totalTime)
 		DirectX::XMFLOAT3 ambient(0.1f, 0.1f, 0.25f);
 		entities[i]->GetMat()->GetPixelShader()->SetFloat3("ambient", ambient);
 
-		for (int l = 0; l < directionalLights.size(); l++) 
-		{
-			entities[i]->GetMat()->GetPixelShader()->SetData(
-				"directionalLight" + std::to_string(l+1), // The name of the (eventual) variable in the shader
-				&directionalLights[l], // The address of the data to set
-				sizeof(Light)); // The size of the data (the whole struct!) to set
-		}
+		//for (int l = 0; l < directionalLights.size(); l++) 
+		//{
+		//	entities[i]->GetMat()->GetPixelShader()->SetData(
+		//		"directionalLight" + std::to_string(l+1), // The name of the (eventual) variable in the shader
+		//		&directionalLights[l], // The address of the data to set
+		//		sizeof(Light)); // The size of the data (the whole struct!) to set
+		//}
 
 
-		for (int l = 0; l < spotLights.size(); l++)
+		//for (int l = 0; l < spotLights.size(); l++)
+		//{
+		//	entities[i]->GetMat()->GetPixelShader()->SetData(
+		//		"spotLight" + std::to_string(l + 1), // The name of the (eventual) variable in the shader
+		//		&spotLights[l], // The address of the data to set
+		//		sizeof(Light)); // The size of the data (the whole struct!) to set
+		//}
+
+		int dLights = 1; 
+		int sLights = 1;
+		int pLights = 1;
+		for (int l = 0; l < lights.size(); l++)
 		{
+			int lightType = lights[l].type;
+			std::string name; //= (lights[l].type == 0 ? "directionalLight" : "spotLight") + std::to_string(l + 1);
+
+			switch (lightType)
+			{
+			case LIGHT_TYPE_DIRECTIONAL:
+				name = "directionalLight" + std::to_string(dLights);
+				dLights++;
+				break;
+			case  LIGHT_TYPE_POINT :
+				name = "pointLight" + std::to_string(pLights);
+				pLights++;
+				break;
+			case LIGHT_TYPE_SPOT: // Not implemented yet 
+			default:
+				continue;
+			}
+
 			entities[i]->GetMat()->GetPixelShader()->SetData(
-				"spotLight" + std::to_string(l + 1), // The name of the (eventual) variable in the shader
-				&spotLights[l], // The address of the data to set
+				name, // The name of the (eventual) variable in the shader
+				&lights[l], // The address of the data to set
 				sizeof(Light)); // The size of the data (the whole struct!) to set
 		}
 
