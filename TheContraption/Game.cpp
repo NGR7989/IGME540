@@ -42,10 +42,10 @@ Game::Game(HINSTANCE hInstance)
 	// Do we want a console window?  Probably only in debug mode
 	CreateConsoleWindow(500, 120, 32, 120);
 	printf("Console window created successfully.  Feel free to printf() here.\n");
-
-	entities = std::vector<std::shared_ptr<Entity>>();
-	cameras = std::vector<std::shared_ptr<Camera>>();
-	currentCam = 0;
+	scene = std::make_shared<Scene>();
+	//entities = std::vector<std::shared_ptr<Entity>>();
+	//cameras = std::vector<std::shared_ptr<Camera>>();
+	//currentCam = 0;
 	currentGUI = 0;
 
 #endif
@@ -120,7 +120,7 @@ void Game::Init()
 /// </summary>
 void Game::LoadLights()
 {
-	lights = std::vector<Light>();
+	std::vector<Light> lights = std::vector<Light>();
 
 	directionalLight1 = {};
 	directionalLight1.type = LIGHT_TYPE_DIRECTIONAL;
@@ -158,6 +158,9 @@ void Game::LoadLights()
 	pointLight2.intensity = 1.0;
 	pointLight2.range = 100.0;
 	lights.push_back(pointLight2);
+
+	// Set the scene's lights 
+	scene->SetLights(lights);
 }
 
 void Game::SetupLitMaterial(std::shared_ptr<Material> mat,
@@ -248,7 +251,7 @@ void Game::CreateGeometry()
 	std::shared_ptr<Mesh> torus = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/torus.obj").c_str());
 	std::shared_ptr<Mesh> lightGUIModel = std::make_shared<Mesh>(device, context, FixPath(L"../../Assets/Models/LightGUIModel.obj").c_str());
 
-	sky = std::make_shared<Sky>(
+	std::shared_ptr<Sky> sky = std::make_shared<Sky>(
 		device,
 		context,
 		sampler,
@@ -260,6 +263,8 @@ void Game::CreateGeometry()
 		L"../../Assets/Textures/Skies/Planet/front.png",
 		L"../../Assets/Textures/Skies/Planet/back.png"
 		);
+
+	scene->SetSky(sky);
 
 	// Create materials 
 	SetupLitMaterial(
@@ -292,6 +297,8 @@ void Game::CreateGeometry()
 	);
 	schlickCushions->AddTextureSRV("Environment", sky->GetCubeSRV());
 	
+	std::vector<std::shared_ptr<Entity>> entities = std::vector<std::shared_ptr<Entity>>();
+
 	// Add all entites to the primary vector 
 	entities.push_back(std::shared_ptr<Entity>(new Entity(helix, lit)));
 	entities[0]->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
@@ -305,22 +312,22 @@ void Game::CreateGeometry()
 	entities.push_back(std::shared_ptr<Entity>(new Entity(cube, schlickCushions)));
 	entities[2]->GetTransform()->MoveRelative(-5.0f, 0.0f, 0.0f);
 
-	// Create gizmos to represent lights in 3D space 
-	//int sCount = (int)spotLights.size();
-	//int dCount = (int)directionalLights.size();
-	for (int i = 0; i < lights.size(); i++)
-	{
-		Light* light = &lights[i]; //i < sCount ? &spotLights[i] : &directionalLights[i - sCount];
-		DirectX::XMFLOAT4 startColor = DirectX::XMFLOAT4(light->color.x, light->color.y, light->color.z, 1);
-		
-		// Light gizmos mat
-		std::shared_ptr<Material> mat = std::make_shared<Material>(startColor, 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
+	scene->SetEntities(entities);
+	scene->GenerateLightGizmos(lightGUIModel, vertexShader, pixelShader);
+	//// Create gizmos to represent lights in 3D space 
+	//for (int i = 0; i < lights.size(); i++)
+	//{
+	//	Light* light = &lights[i]; //i < sCount ? &spotLights[i] : &directionalLights[i - sCount];
+	//	DirectX::XMFLOAT4 startColor = DirectX::XMFLOAT4(light->color.x, light->color.y, light->color.z, 1);
+	//	
+	//	// Light gizmos mat
+	//	std::shared_ptr<Material> mat = std::make_shared<Material>(startColor, 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
 
-		// Add light gizmos to their own vector 
-		lightGizmos.push_back(std::shared_ptr<Entity>(new Entity(lightGUIModel, mat)));
-		lightGizmos[i]->GetTransform()->SetPosition(light->position);
-		lightToGizmos[light] = lightGizmos[i].get();
-	}
+	//	// Add light gizmos to their own vector 
+	//	lightGizmos.push_back(std::shared_ptr<Entity>(new Entity(lightGUIModel, mat)));
+	//	lightGizmos[i]->GetTransform()->SetPosition(light->position);
+	//	lightToGizmos[light] = lightGizmos[i].get();
+	//}
 
 
 	
@@ -329,6 +336,8 @@ void Game::CreateGeometry()
 
 void Game::CreateCameras()
 {
+	std::vector<std::shared_ptr<Camera>> cameras = std::vector<std::shared_ptr<Camera>>();
+
 	// Create the cameras 
 	cameras.push_back(std::make_shared<Camera>(
 		0.0f, 0.0f, -5.0f,						// Pos
@@ -365,6 +374,8 @@ void Game::CreateCameras()
 		XM_PIDIV2,								// FOV 
 		this->windowWidth / this->windowHeight	// Aspect ratio 
 		));
+
+	scene->SetCameras(cameras);
 }
 
 // --------------------------------------------------------
@@ -377,7 +388,12 @@ void Game::OnResize()
 	// Handle base-level DX resize stuff
 	DXCore::OnResize();
 
-	cameras[currentCam].get()->UpdateProjMatrix(
+	//cameras[currentCam].get()->UpdateProjMatrix(
+	//	XM_PIDIV4,										// FOV 
+	//	(float)this->windowWidth / this->windowHeight	// Aspect Ratio
+	//);
+
+	scene->GetCurrentCam().get()->UpdateProjMatrix(
 		XM_PIDIV4,										// FOV 
 		(float)this->windowWidth / this->windowHeight	// Aspect Ratio
 	);
@@ -456,82 +472,61 @@ void Game::UpdateEntityGUI()
 {
 	// Display Entity data 
 
-	for (unsigned int i = 0; i < entities.size(); i++)
-	{
-		// Unique id
-		ImGui::PushID(i);
-		if (ImGui::TreeNode("Entity")) // How to make name based on id? 
-		{
-			CreateEntityGui(entities[i]);
-			ImGui::TreePop();
-		}
-		ImGui::PopID();
-	}
+	//for (unsigned int i = 0; i < entities.size(); i++)
+	//{
+	//	// Unique id
+	//	ImGui::PushID(i);
+	//	if (ImGui::TreeNode("Entity")) // How to make name based on id? 
+	//	{
+	//		CreateEntityGui(entities[i]);
+	//		ImGui::TreePop();
+	//	}
+	//	ImGui::PopID();
+	//}
 }
 
 void Game::UpdateLightGUI()
 {
 	// Display Light GUI
-	/*for (unsigned int i = 0; i < directionalLights.size(); i++)
-	{
-		ImGui::PushID(i);
-		if (ImGui::TreeNode("Directional"))
-		{
-			CreateLightGui(&directionalLights[i]);
-			ImGui::TreePop();
-		}
-		ImGui::PopID();
-	}
 
-	for (unsigned int i = 0; i < spotLights.size(); i++)
-	{
-		ImGui::PushID(i);
-		if (ImGui::TreeNode("Point"))
-		{
-			CreateLightGui(&spotLights[i]);
-			ImGui::TreePop();
-		}
-		ImGui::PopID();
-	}*/
-
-	for (unsigned int i = 0; i < lights.size(); i++)
-	{
-		ImGui::PushID(i);
-		if (ImGui::TreeNode(lights[i].type == LIGHT_TYPE_DIRECTIONAL ? "Directional" : "Point")) // TODO - Account for more light types 
-		{
-			CreateLightGui(&lights[i]);
-			ImGui::TreePop();
-		}
-		ImGui::PopID();
-	}
+	//for (unsigned int i = 0; i < lights.size(); i++)
+	//{
+	//	ImGui::PushID(i);
+	//	if (ImGui::TreeNode(lights[i].type == LIGHT_TYPE_DIRECTIONAL ? "Directional" : "Point")) // TODO - Account for more light types 
+	//	{
+	//		CreateLightGui(&lights[i]);
+	//		ImGui::TreePop();
+	//	}
+	//	ImGui::PopID();
+	//}
 }
 
 void Game::UpdateCameraGUI()
 {
-	const char* items[] = { "Cam0", "Cam1", "Cam2", "Cam3" };
-	static const char* current_item = items[0];
+	//const char* items[] = { "Cam0", "Cam1", "Cam2", "Cam3" };
+	//static const char* current_item = items[0];
 
-	if (ImGui::BeginCombo("Cameras", current_item)) // The second parameter is the label previewed before opening the combo.
-	{
-		for (int n = 0; n < IM_ARRAYSIZE(items); n++)
-		{
-			bool is_selected = (current_item != items[n]); // New item 
-			if (ImGui::Selectable(items[n], is_selected))
-			{
-				current_item = items[n];
-				if (is_selected)
-				{
-					ImGui::SetItemDefaultFocus();
-					currentCam = n;
+	//if (ImGui::BeginCombo("Cameras", current_item)) // The second parameter is the label previewed before opening the combo.
+	//{
+	//	for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+	//	{
+	//		bool is_selected = (current_item != items[n]); // New item 
+	//		if (ImGui::Selectable(items[n], is_selected))
+	//		{
+	//			current_item = items[n];
+	//			if (is_selected)
+	//			{
+	//				ImGui::SetItemDefaultFocus();
+	//				currentCam = n;
 
-					// Resize the screen 
-					OnResize();
-				}
-			}
-		}
-		ImGui::EndCombo();
-	}
-	CreateCamGui(cameras[currentCam].get());
+	//				// Resize the screen 
+	//				OnResize();
+	//			}
+	//		}
+	//	}
+	//	ImGui::EndCombo();
+	//}
+	//CreateCamGui(cameras[currentCam].get());
 }
 
 void Game::CreateCurveGui(int curveType, float plotSizeX, float plotSizeY)
@@ -723,7 +718,7 @@ void Game::UpdateImGui(float deltaTime)
 	if (ImGui::Button("Camera", ImVec2(90, 25))) currentGUI = SHOW_GUI_CAMERA;
 
 
-	switch (currentGUI)
+	/*switch (currentGUI)
 	{
 	case SHOW_GUI_ENTITIES:
 		UpdateEntityGUI();
@@ -736,7 +731,7 @@ void Game::UpdateImGui(float deltaTime)
 		break;
 	default:
 		break;
-	}
+	}*/
 
 	int type = CreateCurveGuiWithDropDown();
 }
@@ -749,7 +744,7 @@ void Game::Update(float deltaTime, float totalTime)
 	UpdateImGui(deltaTime);
 	float mouseLookSpeed = 2.0f; 
 
-	cameras[currentCam]->Update(deltaTime);
+	scene->GetCurrentCam()->Update(deltaTime);
 
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::GetInstance().KeyDown(VK_ESCAPE))
@@ -773,69 +768,55 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
+	scene->DrawEntities(context);
+	scene->DrawLightsGui(context);
+	scene->DrawSky(context);
 	
-	for (unsigned int i = 0; i < entities.size(); i++)
-	{
-		DirectX::XMFLOAT3 ambient(0.1f, 0.1f, 0.25f);
-		entities[i]->GetMat()->GetPixelShader()->SetFloat3("ambient", ambient);
+	//for (unsigned int i = 0; i < entities.size(); i++)
+	//{
+	//	DirectX::XMFLOAT3 ambient(0.1f, 0.1f, 0.25f);
+	//	entities[i]->GetMat()->GetPixelShader()->SetFloat3("ambient", ambient);
 
-		//for (int l = 0; l < directionalLights.size(); l++) 
-		//{
-		//	entities[i]->GetMat()->GetPixelShader()->SetData(
-		//		"directionalLight" + std::to_string(l+1), // The name of the (eventual) variable in the shader
-		//		&directionalLights[l], // The address of the data to set
-		//		sizeof(Light)); // The size of the data (the whole struct!) to set
-		//}
+	//	int dLights = 1; 
+	//	int sLights = 1;
+	//	int pLights = 1;
+	//	for (int l = 0; l < lights.size(); l++)
+	//	{
+	//		int lightType = lights[l].type;
+	//		std::string name; //= (lights[l].type == 0 ? "directionalLight" : "spotLight") + std::to_string(l + 1);
 
+	//		switch (lightType)
+	//		{
+	//		case LIGHT_TYPE_DIRECTIONAL:
+	//			name = "directionalLight" + std::to_string(dLights);
+	//			dLights++;
+	//			break;
+	//		case  LIGHT_TYPE_POINT :
+	//			name = "pointLight" + std::to_string(pLights);
+	//			pLights++;
+	//			break;
+	//		case LIGHT_TYPE_SPOT: // Not implemented yet 
+	//		default:
+	//			continue;
+	//		}
 
-		//for (int l = 0; l < spotLights.size(); l++)
-		//{
-		//	entities[i]->GetMat()->GetPixelShader()->SetData(
-		//		"spotLight" + std::to_string(l + 1), // The name of the (eventual) variable in the shader
-		//		&spotLights[l], // The address of the data to set
-		//		sizeof(Light)); // The size of the data (the whole struct!) to set
-		//}
-
-		int dLights = 1; 
-		int sLights = 1;
-		int pLights = 1;
-		for (int l = 0; l < lights.size(); l++)
-		{
-			int lightType = lights[l].type;
-			std::string name; //= (lights[l].type == 0 ? "directionalLight" : "spotLight") + std::to_string(l + 1);
-
-			switch (lightType)
-			{
-			case LIGHT_TYPE_DIRECTIONAL:
-				name = "directionalLight" + std::to_string(dLights);
-				dLights++;
-				break;
-			case  LIGHT_TYPE_POINT :
-				name = "pointLight" + std::to_string(pLights);
-				pLights++;
-				break;
-			case LIGHT_TYPE_SPOT: // Not implemented yet 
-			default:
-				continue;
-			}
-
-			entities[i]->GetMat()->GetPixelShader()->SetData(
-				name, // The name of the (eventual) variable in the shader
-				&lights[l], // The address of the data to set
-				sizeof(Light)); // The size of the data (the whole struct!) to set
-		}
+	//		entities[i]->GetMat()->GetPixelShader()->SetData(
+	//			name, // The name of the (eventual) variable in the shader
+	//			&lights[l], // The address of the data to set
+	//			sizeof(Light)); // The size of the data (the whole struct!) to set
+	//	}
 
 
 
-		entities[i]->Draw(context, cameras[currentCam]);
-	}
+	//	entities[i]->Draw(context, cameras[currentCam]);
+	//}
 
-	for (unsigned int i = 0; i < lightGizmos.size(); i++)
+	/*for (unsigned int i = 0; i < lightGizmos.size(); i++)
 	{
 		lightGizmos[i]->Draw(context, cameras[currentCam]);
-	}
+	}*/
 
-	sky->Draw(cameras[currentCam]);
+	//sky->Draw(cameras[currentCam]);
 
 	// Frame END
 	// - These should happen exactly ONCE PER FRAME

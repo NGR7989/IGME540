@@ -27,6 +27,7 @@
 #include "Sky.h"
 
 #include "AnimCurves.h"
+#include "Scenes.h"
 
 class Game 
 	: public DXCore
@@ -111,11 +112,11 @@ private:
 	/// <summary>
 	/// Holds all entities active in scene 
 	/// </summary>
-	std::vector<std::shared_ptr<Entity>> entities;
+	//std::vector<std::shared_ptr<Entity>> entities;
 
 	// Camera 
-	int currentCam;
-	std::vector<std::shared_ptr<Camera>> cameras; 
+	//int currentCam;
+	//std::vector<std::shared_ptr<Camera>> cameras; 
 
 	// Materials 
 	std::shared_ptr<Material> mat1;
@@ -140,7 +141,7 @@ private:
 	//std::vector<Light> directionalLights;
 	//std::vector<Light> spotLights;
 
-	std::vector<Light> lights;
+	//std::vector<Light> lights;
 	Light directionalLight1;
 	Light directionalLight2;
 	Light directionalLight3;
@@ -148,8 +149,8 @@ private:
 	Light pointLight2;
 
 	// Skybox 
-	std::shared_ptr<Sky> sky;
+	//std::shared_ptr<Sky> sky;
 
-
+	std::shared_ptr<Scene> scene;
 };
 
