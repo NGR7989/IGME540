@@ -525,6 +525,161 @@ void Game::UpdateCameraGUI()
 	CreateCamGui(cameras[currentCam].get());
 }
 
+void Game::CreateCurveGui(int curveType, float plotSizeX, float plotSizeY)
+{
+	ImVec2 size(plotSizeX, plotSizeY);
+
+	float lines[120];
+	
+
+	// Actually displays the curve 
+	for (int n = 0; n < 120; n++)
+	{
+		float p = n / 120.0f;
+
+		switch (curveType)
+		{
+		case EASE_IN_SINE:
+			lines[n] = EaseInSine(p);
+			break;
+		case EASE_OUT_SINE:
+			lines[n] = EaseOutSine(p);
+			break;
+		case EASE_IN_OUT_SINE:
+			lines[n] = EaseInOutSine(p);
+			break;
+		case EASE_IN_QUAD:
+			lines[n] = EaseInQuad(p);
+			break;
+		case EASE_OUT_QUAD:
+			lines[n] = EaseOutQuad(p);
+			break;
+		case EASE_IN_OUT_QUAD:
+			lines[n] = EaseInOutQuad(p);
+			break;
+		case EASE_IN_CUBIC:
+			lines[n] = EaseInCubic(p);
+			break;
+		case EASE_OUT_CUBIC:
+			lines[n] = EaseOutCubic(p);
+			break;
+		case EASE_IN_OUT_CUBIC:
+			lines[n] = EaseInOutCubic(p);
+			break;
+		case EASE_IN_QUART:
+			lines[n] = EaseInQuart(p);
+			break;
+		case EASE_OUT_QUART:
+			lines[n] = EaseOutQuart(p);
+			break;
+		case EASE_IN_OUT_QUART:
+			lines[n] = EaseInOutQuart(p);
+			break;
+		case EASE_IN_QUINT:
+			lines[n] = EaseInQuint(p);
+			break;
+		case EASE_OUT_QUINT:
+			lines[n] = EaseOutQuint(p);
+			break;
+		case EASE_IN_OUT_QUINT:
+			lines[n] = EaseInOutQuint(p);
+			break;
+		case EASE_IN_EXPO:
+			lines[n] = EaseInExpo(p);
+			break;
+		case EASE_OUT_EXPO:
+			lines[n] = EaseOutExpo(p);
+			break;
+		case EASE_IN_OUT_EXPO:
+			lines[n] = EaseInOutExpo(p);
+			break;
+		case EASE_IN_CIRC:
+			lines[n] = EaseInCirc(p);
+			break;
+		case EASE_OUT_CIRC:
+			lines[n] = EaseOutCirc(p);
+			break;
+		case EASE_IN_OUT_CIRC:
+			lines[n] = EaseInOutCirc(p);
+			break;
+		case EASE_IN_BACK:
+			lines[n] = EaseInBack(p);
+			break;
+		case EASE_OUT_BACK:
+			lines[n] = EaseOutBack(p);
+			break;
+		case EASE_IN_OUT_BACK:
+			lines[n] = EaseInOutBack(p);
+			break;
+		case EASE_IN_ELASTIC:
+			lines[n] = EaseInElastic(p);
+			break;
+		case EASE_OUT_ELASTIC:
+			lines[n] = EaseOutElastic(p);
+			break;
+		case EASE_IN_OUT_ELASTIC:
+			lines[n] = EaseInOutElastic(p);
+			break;
+		case EASE_IN_BOUNCE:
+			lines[n] = EaseInBounce(p);
+			break;
+		case EASE_OUT_BOUNCE:
+			lines[n] = EaseOutBounce(p);
+			break;
+		case EASE_IN_OUT_BOUNCE:
+			lines[n] = EaseInOutBounce(p);
+			break;
+		default:
+			lines[n] = 1.0f;
+			break;
+		}
+	}
+	ImGui::PlotLines("AnimCurve", lines, 120, 0, (const char*)0, - 0.5f, 1.5f, size);
+}
+
+int Game::CreateCurveGuiWithDropDown(float plotSizeX, float plotSizeY)
+{
+
+	const char* items[] = {
+		"EaseInSine", "EaseOutSine", "EaseInOutSine",
+		"EaseInQuad", "EaseOutQuad", "EaseInOutQuad",
+		"EaseInCubic", "EaseOutCubic", "EaseInOutCubic",
+		"EaseInQuart", "EaseOutQuart", "EaseInOutQuart",
+		"EaseInQuint", "EaseOutQuint", "EaseInOutQuint",
+		"EaseInExpo", "EaseOutExpo", "EaseInOutExpo",
+		"EaseInCirc", "EaseOutCirc", "EaseInOutCirc",
+		"EaseInBack", "EaseOutBack", "EaseInOutBack",
+		"EaseInElastic", "EaseOutElastic", "EaseInOutElastic",
+		"EaseInBounce", "EaseOutBounce", "EaseInOutBounce",
+	};
+	static const char* current_item = items[0];
+	static int activeEquation = 0;
+
+	// What type to display 
+	if (ImGui::BeginCombo("Equation", current_item)) // The second parameter is the label previewed before opening the combo.
+	{
+		for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+		{
+			bool is_selected = (current_item != items[n]); // New item 
+			if (ImGui::Selectable(items[n], is_selected))
+			{
+				current_item = items[n];
+				if (is_selected)
+				{
+					ImGui::SetItemDefaultFocus();
+					activeEquation = n;
+
+					break;
+				}
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	CreateCurveGui(activeEquation);
+
+	return activeEquation;
+}
 
 void Game::UpdateImGui(float deltaTime)
 {
@@ -574,115 +729,7 @@ void Game::UpdateImGui(float deltaTime)
 		break;
 	}
 
-
-	ImGui::Begin("Test #1621");
-
-
-
-	float lines[120];
-	const char* items[] = { "EaseInSine", "EaseOutSine", "EaseInOutSine", "EaseInQuad" };
-	static const char* current_item = items[0];
-	static int activeEquation = 0;
-
-	if (ImGui::BeginCombo("Equation", current_item)) // The second parameter is the label previewed before opening the combo.
-	{
-		for (int n = 0; n < IM_ARRAYSIZE(items); n++)
-		{
-			bool is_selected = (current_item != items[n]); // New item 
-			if (ImGui::Selectable(items[n], is_selected))
-			{
-				current_item = items[n];
-				if (is_selected)
-				{
-					ImGui::SetItemDefaultFocus();
-					activeEquation = n;
-					// Resize the screen 
-					OnResize();
-				}
-			}
-		}
-		ImGui::EndCombo();
-	}
-
-
-	for (int n = 0; n < 120; n++)
-	{
-		float p = n / 120.0f;
-
-		switch (activeEquation)
-		{
-		case EASE_IN_SINE:
-			lines[n] = EaseInSine(p);
-			break;
-		case EASE_OUT_SINE:
-			lines[n] = EaseOutSine(p);
-			break;
-		case EASE_IN_OUT_SINE:
-			lines[n] = EaseInOutSine(p);
-			break;
-		case EASE_IN_QUAD:
-			lines[n] = EaseInQuad(p);
-			break;
-		case EASE_OUT_QUAD:
-			break;
-		case EASE_IN_OUT_QUAD:
-			break;
-		case EASE_IN_CUBIC:
-			break;
-		case EASE_OUT_CUBIC:
-			break;
-		case EASE_IN_OUT_CUBIC:
-			break;
-		case EASE_IN_QUART:
-			break;
-		case EASE_OUT_QUART:
-			break;
-		case EASE_IN_OUT_QUART:
-			break;
-		case EASE_IN_QUINT:
-			break;
-		case EASE_OUT_QUINT:
-			break;
-		case EASE_IN_OUT_QUINT:
-			break;
-		case EASE_IN_EXPO:
-			break;
-		case EASE_OUT_EXPO:
-			break;
-		case EASE_IN_OUT_EXPO:
-			break;
-		case EASE_IN_CIRC:
-			break;
-		case EASE_OUT_CIRC:
-			break;
-		case EASE_IN_OUT_CIRC:
-			break;
-		case EASE_IN_BACK:
-			break;
-		case EASE_OUT_BACK:
-			break;
-		case EASE_IN_OUT_BACK:
-			break;
-		case EASE_IN_ELASTIC:
-			break;
-		case EASE_OUT_ELASTIC:
-			break;
-		case EASE_IN_OUT_ELASTIC:
-			break;
-		case EASE_IN_BOUNCE:
-			break;
-		case EASE_OUT_BOUNCE:
-			break;
-		case EASE_IN_OUT_BOUNCE:
-			break;
-		default:
-			lines[n] = 1.0f;
-			break;
-		}
-	}
-	ImGui::PlotLines("graph 1.0f", lines, 120, 0, (const char*)0, 0, 1, ImVec2(100, 100));
-
-	ImGui::End();
+	int type = CreateCurveGuiWithDropDown();
 }
 
 // --------------------------------------------------------
@@ -749,7 +796,9 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 		lightGizmos[i]->Draw(context, cameras[currentCam]);
 	}
+
 	sky->Draw(cameras[currentCam]);
+
 	// Frame END
 	// - These should happen exactly ONCE PER FRAME
 	// - At the very end of the frame (after drawing *everything*)

@@ -4,6 +4,9 @@
 #define SHOW_GUI_LIGHTS 1
 #define SHOW_GUI_CAMERA 2
 
+#define SCENE_MAT_TEST 0
+#define SCENE_DECONSTRUCTION 1
+
 #include "DXCore.h"
 #include <DirectXMath.h>
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
@@ -68,6 +71,16 @@ private:
 	/// </summary>
 	/// <param name="cam"></param>
 	void CreateCamGui(Camera* cam);
+
+	/// <summary>
+	/// Creates a visual curve for ImGui
+	/// </summary>
+	void CreateCurveGui(int curveType, float plotSizeX = 100.0f, float plotSizeY = 80.0f);
+	/// <summary>
+	/// Create a curve gui that automatically creates the dropdown and will return the selected index 
+	/// </summary>
+	/// <returns>Selected index. See AnimCurves.h for defines</returns>
+	int CreateCurveGuiWithDropDown(float plotSizeX = 100.0f, float plotSizeY = 80.0f);
 
 
 	void SetupLitMaterial(
