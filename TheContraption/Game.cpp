@@ -573,6 +573,62 @@ void Game::UpdateImGui(float deltaTime)
 	default:
 		break;
 	}
+
+
+	ImGui::Begin("Test #1621");
+
+
+
+	float lines[120];
+	const char* items[] = { "EaseInSine", "EaseOutSine", "EaseInOutSine", "EaseInQuad" };
+	static const char* current_item = items[0];
+	static int activeEquation = 0;
+
+	if (ImGui::BeginCombo("Cameras", current_item)) // The second parameter is the label previewed before opening the combo.
+	{
+		for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+		{
+			bool is_selected = (current_item != items[n]); // New item 
+			if (ImGui::Selectable(items[n], is_selected))
+			{
+				current_item = items[n];
+				if (is_selected)
+				{
+					ImGui::SetItemDefaultFocus();
+					activeEquation = n;
+					// Resize the screen 
+					OnResize();
+				}
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+
+	for (int n = 0; n < 120; n++)
+	{
+		float p = n / 120.0f;
+
+		switch (activeEquation)
+		{
+		case EASE_IN_SINE:
+			lines[n] = 1 - std::cos((p * PI) / 2.0f);
+			break;
+		case EASE_OUT_SINE:
+			lines[n] = std::sin((p * PI) / 2.0f);
+			break;
+		case EASE_IN_OUT_SINE:
+			break;
+		case EASE_IN_QUAD:
+			break;
+		default:
+			lines[n] = 1.0f;
+			break;
+		}
+	}
+	ImGui::PlotLines("graph 1.0f", lines, 120, 0, (const char*)0, 0, 1, ImVec2(100, 100));
+
+	ImGui::End();
 }
 
 // --------------------------------------------------------
