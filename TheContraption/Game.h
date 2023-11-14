@@ -4,12 +4,6 @@
 #define SHOW_GUI_LIGHTS 1
 #define SHOW_GUI_CAMERA 2
 
-// Which curve type
-#define EASE_IN_SINE 0
-#define EASE_OUT_SINE 1
-#define EASE_IN_OUT_SINE 2
-#define EASE_IN_QUAD 3
-
 #include "DXCore.h"
 #include <DirectXMath.h>
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
@@ -28,6 +22,8 @@
 #include "MatData.h"
 
 #include "Sky.h"
+
+#include "AnimCurves.h"
 
 class Game 
 	: public DXCore
@@ -137,6 +133,7 @@ private:
 
 	// Skybox 
 	std::shared_ptr<Sky> sky;
+
 
 };
 

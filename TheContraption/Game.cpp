@@ -584,7 +584,7 @@ void Game::UpdateImGui(float deltaTime)
 	static const char* current_item = items[0];
 	static int activeEquation = 0;
 
-	if (ImGui::BeginCombo("Cameras", current_item)) // The second parameter is the label previewed before opening the combo.
+	if (ImGui::BeginCombo("Equation", current_item)) // The second parameter is the label previewed before opening the combo.
 	{
 		for (int n = 0; n < IM_ARRAYSIZE(items); n++)
 		{
@@ -612,14 +612,68 @@ void Game::UpdateImGui(float deltaTime)
 		switch (activeEquation)
 		{
 		case EASE_IN_SINE:
-			lines[n] = 1 - std::cos((p * PI) / 2.0f);
+			lines[n] = EaseInSine(p);
 			break;
 		case EASE_OUT_SINE:
-			lines[n] = std::sin((p * PI) / 2.0f);
+			lines[n] = EaseOutSine(p);
 			break;
 		case EASE_IN_OUT_SINE:
+			lines[n] = EaseInOutSine(p);
 			break;
 		case EASE_IN_QUAD:
+			lines[n] = EaseInQuad(p);
+			break;
+		case EASE_OUT_QUAD:
+			break;
+		case EASE_IN_OUT_QUAD:
+			break;
+		case EASE_IN_CUBIC:
+			break;
+		case EASE_OUT_CUBIC:
+			break;
+		case EASE_IN_OUT_CUBIC:
+			break;
+		case EASE_IN_QUART:
+			break;
+		case EASE_OUT_QUART:
+			break;
+		case EASE_IN_OUT_QUART:
+			break;
+		case EASE_IN_QUINT:
+			break;
+		case EASE_OUT_QUINT:
+			break;
+		case EASE_IN_OUT_QUINT:
+			break;
+		case EASE_IN_EXPO:
+			break;
+		case EASE_OUT_EXPO:
+			break;
+		case EASE_IN_OUT_EXPO:
+			break;
+		case EASE_IN_CIRC:
+			break;
+		case EASE_OUT_CIRC:
+			break;
+		case EASE_IN_OUT_CIRC:
+			break;
+		case EASE_IN_BACK:
+			break;
+		case EASE_OUT_BACK:
+			break;
+		case EASE_IN_OUT_BACK:
+			break;
+		case EASE_IN_ELASTIC:
+			break;
+		case EASE_OUT_ELASTIC:
+			break;
+		case EASE_IN_OUT_ELASTIC:
+			break;
+		case EASE_IN_BOUNCE:
+			break;
+		case EASE_OUT_BOUNCE:
+			break;
+		case EASE_IN_OUT_BOUNCE:
 			break;
 		default:
 			lines[n] = 1.0f;
