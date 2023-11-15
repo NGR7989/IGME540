@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "SimpleShader.h"
+#include <DirectXMath.h>
 
 /*
 	The purpose of the script is to hold individual scene data that 
@@ -21,7 +22,7 @@ public:
 		std::vector<std::shared_ptr<Entity>> entities,
 		// We pass in light and its gui at the same time so
 		// that they have the same size.
-		std::vector<std::tuple<Light, std::shared_ptr<Entity>>> lightAndGui,
+		std::vector<std::tuple<std::shared_ptr<Light>, std::shared_ptr<Entity>>> lightAndGui,
 		std::shared_ptr<Sky> sky
 	);
 
@@ -35,9 +36,11 @@ public:
 	void ChangeCurrentCam(int index);
 	void SetCameras(std::vector<std::shared_ptr<Camera>> cameras);
 	void SetEntities(std::vector<std::shared_ptr<Entity>> entities);
-	void SetLightsAndGui(std::vector<std::tuple<Light, std::shared_ptr<Entity>>> lightAndGui);
-	void SetLights(std::vector<Light> lights);
+	void SetLightsAndGui(std::vector<std::tuple<std::shared_ptr<Light>, std::shared_ptr<Entity>>> lightAndGui);
+	void SetLights(std::vector<std::shared_ptr<Light>> lights);
 	void SetSky(std::shared_ptr<Sky> sky);
+
+	void ResizeCam(float windowWidth, float windowHeight);
 
 	// Recreate the gizmos for light objects 
 	// using the given mesh
@@ -47,8 +50,11 @@ public:
 		std::shared_ptr<SimplePixelShader> pixel
 	);
 
+	std::vector<std::shared_ptr<Entity>> GetEntities();
+	std::vector<std::shared_ptr<Light>> GetLights();
+	std::unordered_map<Light*, Entity*> GetLightToGizmos();
+	std::vector<std::shared_ptr<Camera>> GetAllCams();
 	std::shared_ptr<Camera> GetCurrentCam();
-	std::shared_ptr<Camera> GetCurrentLights();
 
 private:
 	// World entities 
@@ -61,7 +67,7 @@ private:
 	std::vector<std::shared_ptr<Camera>> cameras;
 
 	// Display light positions 
-	std::vector<Light> lights;
+	std::vector<std::shared_ptr<Light>> lights;
 	std::vector<std::shared_ptr<Entity>> lightGizmos;
 	std::unordered_map<Light*, Entity*> lightToGizmos; 
 };

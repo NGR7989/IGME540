@@ -120,28 +120,28 @@ void Game::Init()
 /// </summary>
 void Game::LoadLights()
 {
-	std::vector<Light> lights = std::vector<Light>();
+	std::vector<std::shared_ptr<Light>> lights = std::vector<std::shared_ptr<Light>>();
 
 	directionalLight1 = {};
 	directionalLight1.type = LIGHT_TYPE_DIRECTIONAL;
 	directionalLight1.directiton = DirectX::XMFLOAT3(1, -1, 0);
 	directionalLight1.color = DirectX::XMFLOAT3(0.2f, 0.2f, 0.2f);
 	directionalLight1.intensity = 1.0;
-	lights.push_back(directionalLight1);
+	lights.push_back(std::make_shared<Light>(directionalLight1));
 
 	directionalLight2 = {};
 	directionalLight2.type = LIGHT_TYPE_DIRECTIONAL;
 	directionalLight2.directiton = DirectX::XMFLOAT3(0, -1, 0);
 	directionalLight2.color = DirectX::XMFLOAT3(1, 1, 1);
 	directionalLight2.intensity = 1.0;
-	lights.push_back(directionalLight2);
+	lights.push_back(std::make_shared<Light>(directionalLight2));
 
 	directionalLight3 = {};
 	directionalLight3.type = LIGHT_TYPE_DIRECTIONAL;
 	directionalLight3.directiton = DirectX::XMFLOAT3(-0.2f, 1, 0);
 	directionalLight3.color = DirectX::XMFLOAT3(0, 1, 0);
 	directionalLight3.intensity = 1.0;
-	lights.push_back(directionalLight3);
+	lights.push_back(std::make_shared<Light>(directionalLight3));
 
 	pointLight1 = {};
 	pointLight1.type = LIGHT_TYPE_POINT;
@@ -149,7 +149,7 @@ void Game::LoadLights()
 	pointLight1.color = DirectX::XMFLOAT3(0, 1, 0);
 	pointLight1.intensity = 1.0;
 	pointLight1.range = 40.0;
-	lights.push_back(pointLight1);
+	lights.push_back(std::make_shared<Light>(pointLight1));
 
 	pointLight2 = {};
 	pointLight2.type = LIGHT_TYPE_POINT;
@@ -157,7 +157,7 @@ void Game::LoadLights()
 	pointLight2.color = DirectX::XMFLOAT3(0, 0, 1);
 	pointLight2.intensity = 1.0;
 	pointLight2.range = 100.0;
-	lights.push_back(pointLight2);
+	lights.push_back(std::make_shared<Light>(pointLight2));
 
 	// Set the scene's lights 
 	scene->SetLights(lights);
@@ -274,13 +274,6 @@ void Game::CreateGeometry()
 		L"../../Assets/Textures/original.png"
 	);
 
-	/*SetupLitMaterial(
-		litCushion,
-		L"../../Assets/Textures/ass9/cushion.png",
-		L"../../Assets/Textures/rustymetal_specular.png",
-		L"../../Assets/Textures/ass9/cushion_normals.png"
-	);*/
-
 	SetupLitMaterial(
 		schlickBricks,
 		L"../../Assets/Textures/ass9/cobblestone.png",
@@ -303,9 +296,6 @@ void Game::CreateGeometry()
 	entities.push_back(std::shared_ptr<Entity>(new Entity(helix, lit)));
 	entities[0]->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
 
-	//entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, litCushion)));
-	//entities[1]->GetTransform()->SetPosition(-1.0f, 0.0f, 0.0f);
-
 	entities.push_back(std::shared_ptr<Entity>(new Entity(sphere, schlickBricks)));
 	entities[1]->GetTransform()->MoveRelative(5.0f, 0.0f, 0.0f);
 
@@ -314,23 +304,6 @@ void Game::CreateGeometry()
 
 	scene->SetEntities(entities);
 	scene->GenerateLightGizmos(lightGUIModel, vertexShader, pixelShader);
-	//// Create gizmos to represent lights in 3D space 
-	//for (int i = 0; i < lights.size(); i++)
-	//{
-	//	Light* light = &lights[i]; //i < sCount ? &spotLights[i] : &directionalLights[i - sCount];
-	//	DirectX::XMFLOAT4 startColor = DirectX::XMFLOAT4(light->color.x, light->color.y, light->color.z, 1);
-	//	
-	//	// Light gizmos mat
-	//	std::shared_ptr<Material> mat = std::make_shared<Material>(startColor, 1.0f, DirectX::XMFLOAT2(0, 0), vertexShader, pixelShader);
-
-	//	// Add light gizmos to their own vector 
-	//	lightGizmos.push_back(std::shared_ptr<Entity>(new Entity(lightGUIModel, mat)));
-	//	lightGizmos[i]->GetTransform()->SetPosition(light->position);
-	//	lightToGizmos[light] = lightGizmos[i].get();
-	//}
-
-
-	
 }
 
 
@@ -388,301 +361,7 @@ void Game::OnResize()
 	// Handle base-level DX resize stuff
 	DXCore::OnResize();
 
-	//cameras[currentCam].get()->UpdateProjMatrix(
-	//	XM_PIDIV4,										// FOV 
-	//	(float)this->windowWidth / this->windowHeight	// Aspect Ratio
-	//);
-
-	scene->GetCurrentCam().get()->UpdateProjMatrix(
-		XM_PIDIV4,										// FOV 
-		(float)this->windowWidth / this->windowHeight	// Aspect Ratio
-	);
-}
-
-
-void Game::CreateEntityGui(std::shared_ptr<Entity> entity)
-{
-	Transform* trans = entity->GetTransform();
-	XMFLOAT3 pos = *(trans->GetPosition().get());
-	XMFLOAT3 rot = trans->GetEulerRotation();
-	XMFLOAT3 sca = trans->GetScale();
-
-	XMFLOAT2 uvOff = entity.get()->GetMat()->GetUVOffset();
-
-	if (ImGui::DragFloat3("Position", &pos.x, 0.01f)) trans->SetPosition(pos);
-	if (ImGui::DragFloat3("Rotation (Radians)", &rot.x, 0.01f)) trans->SetEulerRotation(rot);
-	if (ImGui::DragFloat3("Scale", &sca.x, 0.01f)) trans->SetScale(sca);
-
-	ImGui::Dummy(ImVec2(0, 10));
-	if (ImGui::DragFloat2("UV Offset", &uvOff.x, 0.01f)) entity->GetMat()->SetUVOffset(uvOff);
-}
-
-void Game::CreateLightGui(Light* light)
-{
-	// GUI that all light types have 
-	XMFLOAT3 color = light->color;
-	XMFLOAT3 position = light->position;
-
-	//ImGui::ColorEdit4(:Color)
-	if (ImGui::ColorEdit3("Color", &color.x, 0.01f))
-	{
-		light->color = color;
-		lightToGizmos[light]->GetMat()->SetTint(DirectX::XMFLOAT4(color.x, color.y, color.z, 1.0));
-	}
-	if (ImGui::DragFloat3("GUI Position", &position.x, 0.01f))
-	{
-		light->position = position;
-		lightToGizmos[light]->GetTransform()->SetPosition(position);
-	}
-
-	// Create GUI information for specific light type 
-	switch (light->type)
-	{
-	case LIGHT_TYPE_DIRECTIONAL:
-		CreateDirLightGui(light);
-		break;
-	case LIGHT_TYPE_POINT:
-		CreatePointLightGui(light);
-		break;
-	case LIGHT_TYPE_SPOT: // Currently no spot light 
-	default:
-		break;
-	}
-}
-
-void Game::CreateDirLightGui(Light* light)
-{
-	XMFLOAT3 direction = light->directiton;
-	if (ImGui::DragFloat3("Direction", &direction.x, 0.01f)) light->directiton = direction;
-}
-
-void Game::CreatePointLightGui(Light* light)
-{
-	float range = light->range;
-	if (ImGui::DragFloat("Range", &range, 0.01f)) light->range = range;
-}
-
-void Game::CreateCamGui(Camera* cam)
-{
-	float commonMoveSpeed = cam->GetCommonMoveSpeed();
-	if (ImGui::DragFloat("Common Move Speed", &commonMoveSpeed, 0.01f)) cam->SetCommonMoveSpeed(commonMoveSpeed);
-}
-
-void Game::UpdateEntityGUI()
-{
-	// Display Entity data 
-
-	//for (unsigned int i = 0; i < entities.size(); i++)
-	//{
-	//	// Unique id
-	//	ImGui::PushID(i);
-	//	if (ImGui::TreeNode("Entity")) // How to make name based on id? 
-	//	{
-	//		CreateEntityGui(entities[i]);
-	//		ImGui::TreePop();
-	//	}
-	//	ImGui::PopID();
-	//}
-}
-
-void Game::UpdateLightGUI()
-{
-	// Display Light GUI
-
-	//for (unsigned int i = 0; i < lights.size(); i++)
-	//{
-	//	ImGui::PushID(i);
-	//	if (ImGui::TreeNode(lights[i].type == LIGHT_TYPE_DIRECTIONAL ? "Directional" : "Point")) // TODO - Account for more light types 
-	//	{
-	//		CreateLightGui(&lights[i]);
-	//		ImGui::TreePop();
-	//	}
-	//	ImGui::PopID();
-	//}
-}
-
-void Game::UpdateCameraGUI()
-{
-	//const char* items[] = { "Cam0", "Cam1", "Cam2", "Cam3" };
-	//static const char* current_item = items[0];
-
-	//if (ImGui::BeginCombo("Cameras", current_item)) // The second parameter is the label previewed before opening the combo.
-	//{
-	//	for (int n = 0; n < IM_ARRAYSIZE(items); n++)
-	//	{
-	//		bool is_selected = (current_item != items[n]); // New item 
-	//		if (ImGui::Selectable(items[n], is_selected))
-	//		{
-	//			current_item = items[n];
-	//			if (is_selected)
-	//			{
-	//				ImGui::SetItemDefaultFocus();
-	//				currentCam = n;
-
-	//				// Resize the screen 
-	//				OnResize();
-	//			}
-	//		}
-	//	}
-	//	ImGui::EndCombo();
-	//}
-	//CreateCamGui(cameras[currentCam].get());
-}
-
-void Game::CreateCurveGui(int curveType, float plotSizeX, float plotSizeY)
-{
-	ImVec2 size(plotSizeX, plotSizeY);
-
-	float lines[120];
-	
-
-	// Actually displays the curve 
-	for (int n = 0; n < 120; n++)
-	{
-		float p = n / 120.0f;
-
-		switch (curveType)
-		{
-		case EASE_IN_SINE:
-			lines[n] = EaseInSine(p);
-			break;
-		case EASE_OUT_SINE:
-			lines[n] = EaseOutSine(p);
-			break;
-		case EASE_IN_OUT_SINE:
-			lines[n] = EaseInOutSine(p);
-			break;
-		case EASE_IN_QUAD:
-			lines[n] = EaseInQuad(p);
-			break;
-		case EASE_OUT_QUAD:
-			lines[n] = EaseOutQuad(p);
-			break;
-		case EASE_IN_OUT_QUAD:
-			lines[n] = EaseInOutQuad(p);
-			break;
-		case EASE_IN_CUBIC:
-			lines[n] = EaseInCubic(p);
-			break;
-		case EASE_OUT_CUBIC:
-			lines[n] = EaseOutCubic(p);
-			break;
-		case EASE_IN_OUT_CUBIC:
-			lines[n] = EaseInOutCubic(p);
-			break;
-		case EASE_IN_QUART:
-			lines[n] = EaseInQuart(p);
-			break;
-		case EASE_OUT_QUART:
-			lines[n] = EaseOutQuart(p);
-			break;
-		case EASE_IN_OUT_QUART:
-			lines[n] = EaseInOutQuart(p);
-			break;
-		case EASE_IN_QUINT:
-			lines[n] = EaseInQuint(p);
-			break;
-		case EASE_OUT_QUINT:
-			lines[n] = EaseOutQuint(p);
-			break;
-		case EASE_IN_OUT_QUINT:
-			lines[n] = EaseInOutQuint(p);
-			break;
-		case EASE_IN_EXPO:
-			lines[n] = EaseInExpo(p);
-			break;
-		case EASE_OUT_EXPO:
-			lines[n] = EaseOutExpo(p);
-			break;
-		case EASE_IN_OUT_EXPO:
-			lines[n] = EaseInOutExpo(p);
-			break;
-		case EASE_IN_CIRC:
-			lines[n] = EaseInCirc(p);
-			break;
-		case EASE_OUT_CIRC:
-			lines[n] = EaseOutCirc(p);
-			break;
-		case EASE_IN_OUT_CIRC:
-			lines[n] = EaseInOutCirc(p);
-			break;
-		case EASE_IN_BACK:
-			lines[n] = EaseInBack(p);
-			break;
-		case EASE_OUT_BACK:
-			lines[n] = EaseOutBack(p);
-			break;
-		case EASE_IN_OUT_BACK:
-			lines[n] = EaseInOutBack(p);
-			break;
-		case EASE_IN_ELASTIC:
-			lines[n] = EaseInElastic(p);
-			break;
-		case EASE_OUT_ELASTIC:
-			lines[n] = EaseOutElastic(p);
-			break;
-		case EASE_IN_OUT_ELASTIC:
-			lines[n] = EaseInOutElastic(p);
-			break;
-		case EASE_IN_BOUNCE:
-			lines[n] = EaseInBounce(p);
-			break;
-		case EASE_OUT_BOUNCE:
-			lines[n] = EaseOutBounce(p);
-			break;
-		case EASE_IN_OUT_BOUNCE:
-			lines[n] = EaseInOutBounce(p);
-			break;
-		default:
-			lines[n] = 1.0f;
-			break;
-		}
-	}
-	ImGui::PlotLines("AnimCurve", lines, 120, 0, (const char*)0, - 0.5f, 1.5f, size);
-}
-
-int Game::CreateCurveGuiWithDropDown(float plotSizeX, float plotSizeY)
-{
-
-	const char* items[] = {
-		"EaseInSine", "EaseOutSine", "EaseInOutSine",
-		"EaseInQuad", "EaseOutQuad", "EaseInOutQuad",
-		"EaseInCubic", "EaseOutCubic", "EaseInOutCubic",
-		"EaseInQuart", "EaseOutQuart", "EaseInOutQuart",
-		"EaseInQuint", "EaseOutQuint", "EaseInOutQuint",
-		"EaseInExpo", "EaseOutExpo", "EaseInOutExpo",
-		"EaseInCirc", "EaseOutCirc", "EaseInOutCirc",
-		"EaseInBack", "EaseOutBack", "EaseInOutBack",
-		"EaseInElastic", "EaseOutElastic", "EaseInOutElastic",
-		"EaseInBounce", "EaseOutBounce", "EaseInOutBounce",
-	};
-	static const char* current_item = items[0];
-	static int activeEquation = 0;
-
-	// What type to display 
-	if (ImGui::BeginCombo("Equation", current_item)) // The second parameter is the label previewed before opening the combo.
-	{
-		for (int n = 0; n < IM_ARRAYSIZE(items); n++)
-		{
-			bool is_selected = (current_item != items[n]); // New item 
-			if (ImGui::Selectable(items[n], is_selected))
-			{
-				current_item = items[n];
-				if (is_selected)
-				{
-					ImGui::SetItemDefaultFocus();
-					activeEquation = n;
-
-					break;
-				}
-			}
-		}
-		ImGui::EndCombo();
-	}
-
-	CreateCurveGui(activeEquation);
-
-	return activeEquation;
+	scene->ResizeCam((float)this->windowWidth, this->windowHeight);
 }
 
 void Game::UpdateImGui(float deltaTime)
@@ -718,22 +397,22 @@ void Game::UpdateImGui(float deltaTime)
 	if (ImGui::Button("Camera", ImVec2(90, 25))) currentGUI = SHOW_GUI_CAMERA;
 
 
-	/*switch (currentGUI)
+	switch (currentGUI)
 	{
 	case SHOW_GUI_ENTITIES:
-		UpdateEntityGUI();
+		sceneGui->UpdateEntityGUI(scene->GetEntities());
 		break;
 	case SHOW_GUI_LIGHTS:
-		UpdateLightGUI();
+		sceneGui->UpdateLightGUI(scene->GetLights(), scene->GetLightToGizmos());
 		break;
 	case SHOW_GUI_CAMERA:
-		UpdateCameraGUI();
+		sceneGui->UpdateCameraGUI(scene->GetAllCams(), scene.get(), (float)this->windowWidth, (float)this->windowHeight);
 		break;
 	default:
 		break;
-	}*/
+	}
 
-	int type = CreateCurveGuiWithDropDown();
+	//int type = CreateCurveGuiWithDropDown();
 }
 
 // --------------------------------------------------------

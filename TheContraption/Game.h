@@ -28,6 +28,7 @@
 
 #include "AnimCurves.h"
 #include "Scenes.h"
+#include "SceneGui.h"
 
 class Game 
 	: public DXCore
@@ -52,37 +53,6 @@ private:
 
 	// Gui - Used to tell the computer which gui to display 
 	void UpdateImGui(float deltaTime);
-	void UpdateEntityGUI();
-	void UpdateLightGUI();
-	void UpdateCameraGUI();
-
-	// Following code is used to create specific GUI 
-	void CreateEntityGui(std::shared_ptr<Entity> entity);
-	/// <summary>
-	/// Call this function to automatically create a light
-	/// based on the lights type index
-	/// </summary>
-	/// <param name="light"></param>
-	void CreateLightGui(Light* light);
-	void CreateDirLightGui(Light *light);
-	void CreatePointLightGui(Light *light);
-
-	/// <summary>
-	/// INteract with adjustable settings for given camera
-	/// </summary>
-	/// <param name="cam"></param>
-	void CreateCamGui(Camera* cam);
-
-	/// <summary>
-	/// Creates a visual curve for ImGui
-	/// </summary>
-	void CreateCurveGui(int curveType, float plotSizeX = 100.0f, float plotSizeY = 80.0f);
-	/// <summary>
-	/// Create a curve gui that automatically creates the dropdown and will return the selected index 
-	/// </summary>
-	/// <returns>Selected index. See AnimCurves.h for defines</returns>
-	int CreateCurveGuiWithDropDown(float plotSizeX = 100.0f, float plotSizeY = 80.0f);
-
 
 	void SetupLitMaterial(
 		std::shared_ptr<Material> mat, 
@@ -109,15 +79,6 @@ private:
 	std::shared_ptr<SimplePixelShader> customPShader;
 	std::shared_ptr<SimpleVertexShader> vertexShader;
 
-	/// <summary>
-	/// Holds all entities active in scene 
-	/// </summary>
-	//std::vector<std::shared_ptr<Entity>> entities;
-
-	// Camera 
-	//int currentCam;
-	//std::vector<std::shared_ptr<Camera>> cameras; 
-
 	// Materials 
 	std::shared_ptr<Material> mat1;
 	std::shared_ptr<Material> mat2;
@@ -138,19 +99,14 @@ private:
 	int currentGUI;
 
 	// Lights 
-	//std::vector<Light> directionalLights;
-	//std::vector<Light> spotLights;
-
-	//std::vector<Light> lights;
 	Light directionalLight1;
 	Light directionalLight2;
 	Light directionalLight3;
 	Light pointLight1;
 	Light pointLight2;
 
-	// Skybox 
-	//std::shared_ptr<Sky> sky;
-
 	std::shared_ptr<Scene> scene;
+	// Debug info 
+	std::shared_ptr<SceneGui> sceneGui; 
 };
 

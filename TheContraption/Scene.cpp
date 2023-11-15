@@ -3,7 +3,7 @@
 Scene::Scene(
 	std::vector<std::shared_ptr<Camera>> cameras,
 	std::vector<std::shared_ptr<Entity>> entities,
-	std::vector<std::tuple<Light,std::shared_ptr<Entity>>> lightAndGui,
+	std::vector<std::tuple<std::shared_ptr<Light>,std::shared_ptr<Entity>>> lightAndGui,
 	std::shared_ptr<Sky> sky
 ) :
 	cameras(cameras), entities(entities), lights(lights)
@@ -18,6 +18,8 @@ Scene::Scene(
 Scene::Scene()
 {
 	currentCam = 0;
+
+	lightToGizmos = std::unordered_map<Light*, Entity*>();
 }
 
 
@@ -33,7 +35,7 @@ void Scene::DrawEntities(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context)
 		int pLights = 1;
 		for (int l = 0; l < lights.size(); l++)
 		{
-			int lightType = lights[l].type;
+			int lightType = lights[l]->type;
 			std::string name; //= (lights[l].type == 0 ? "directionalLight" : "spotLight") + std::to_string(l + 1);
 
 			switch (lightType)
@@ -53,7 +55,7 @@ void Scene::DrawEntities(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context)
 
 			entities[i]->GetMat()->GetPixelShader()->SetData(
 				name, // The name of the (eventual) variable in the shader
-				&lights[l], // The address of the data to set
+				lights[l].get(), // The address of the data to set
 				sizeof(Light)); // The size of the data (the whole struct!) to set
 		}
 
@@ -98,20 +100,20 @@ void Scene::SetSky(std::shared_ptr<Sky> sky)
 	(*this).sky = sky;
 }
 
-void Scene::SetLights(std::vector<Light> lights)
+void Scene::SetLights(std::vector<std::shared_ptr<Light>> lights)
 {
 	(*this).lights = lights;
 }
 
-void Scene::SetLightsAndGui(std::vector<std::tuple<Light, std::shared_ptr<Entity>>> lightAndGui)
+void Scene::SetLightsAndGui(std::vector<std::tuple<std::shared_ptr<Light>, std::shared_ptr<Entity>>> lightAndGui)
 {
 	for (int i = 0; i < lightAndGui.size(); i++)
 	{
-		std::tuple<Light, std::shared_ptr<Entity>> current = lightAndGui[i];
+		std::tuple<std::shared_ptr<Light>, std::shared_ptr<Entity>> current = lightAndGui[i];
 		lights.push_back(std::get<0>(current));
 		lightGizmos.push_back(std::get<1>(current));
 
-		lightToGizmos[&lights[lights.size() - 1]] = lightGizmos[lightGizmos.size() - 1].get();
+		lightToGizmos[lights[lights.size() - 1].get()] = lightGizmos[lightGizmos.size() - 1].get();
 	}
 }
 
@@ -124,7 +126,7 @@ void Scene::GenerateLightGizmos(
 	// Create gizmos to represent lights in 3D space 
 	for (int i = 0; i < lights.size(); i++)
 	{
-		Light* light = &lights[i]; //i < sCount ? &spotLights[i] : &directionalLights[i - sCount];
+		Light* light = lights[i].get(); //i < sCount ? &spotLights[i] : &directionalLights[i - sCount];
 		DirectX::XMFLOAT4 startColor = DirectX::XMFLOAT4(light->color.x, light->color.y, light->color.z, 1);
 
 		// Light gizmos mat
@@ -137,8 +139,36 @@ void Scene::GenerateLightGizmos(
 	}
 }
 
+std::vector<std::shared_ptr<Entity>> Scene::GetEntities()
+{
+	return entities;
+}
+
+std::vector<std::shared_ptr<Light>> Scene::GetLights()
+{
+	return lights;
+}
+
+std::unordered_map<Light*, Entity*> Scene::GetLightToGizmos()
+{
+	return lightToGizmos;
+}
+
+std::vector<std::shared_ptr<Camera>> Scene::GetAllCams()
+{
+	return cameras;
+}
 
 std::shared_ptr<Camera> Scene::GetCurrentCam()
 {
 	return cameras[currentCam];
+}
+
+
+void Scene::ResizeCam(float windowWidth, float windowHeight)
+{
+	GetCurrentCam().get()->UpdateProjMatrix(
+		DirectX::XM_PIDIV4,								// FOV 
+		windowWidth / windowHeight				// Aspect Ratio
+	);
 }
