@@ -412,7 +412,7 @@ void Game::UpdateImGui(float deltaTime)
 		break;
 	}
 
-	//int type = CreateCurveGuiWithDropDown();
+	int type = sceneGui->CreateCurveGuiWithDropDown();
 }
 
 // --------------------------------------------------------

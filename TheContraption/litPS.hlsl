@@ -31,11 +31,12 @@ float2 GetUV(VertexToPixel input)
 
 float3 GetSurfaceColor(VertexToPixel input)
 {
-	float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, GetUV(input)).rgb;
+	//float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, GetUV(input)).rgb;
+	float3 surfaceColor = pow(SurfaceTexture.Sample(BasicSampler, GetUV(input)).rgb, 2.2f);
 	return surfaceColor;
 }
 
-float GetSpec(VertexToPixel input)
+float GetSpec(VertexToPixel input) 
 {
 	return SpeculuarTexture.Sample(BasicSampler, GetUV(input)).r;
 }
@@ -117,5 +118,5 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float3 light5 = PointLight(pointLight2, input, ambient, roughness);
 
 	float3 totalLight = light1 + light2 + light3 + light4 + light5;
-	return float4(totalLight, 1);
+	return float4(pow(totalLight, 1.0f / 2.2f), 1);
 }

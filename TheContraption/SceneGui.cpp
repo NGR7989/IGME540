@@ -243,7 +243,7 @@ void SceneGui::CreateCurveGui(int curveType, float plotSizeX, float plotSizeY)
 			break;
 		}
 	}
-	ImGui::PlotLines("AnimCurve", lines, 120, 0, (const char*)0, -0.5f, 1.5f, size);
+	ImGui::PlotLines("AnimCurve", lines, 120, 0, (const char*)0, -0.24f, 1.25f, size);
 }
 
 int SceneGui::CreateCurveGuiWithDropDown(float plotSizeX, float plotSizeY)
